@@ -1,0 +1,59 @@
+--- a/SirInitFromKtSymbol.kt
++++ b/SirInitFromKtSymbol.kt
+@@ -125,6 +125,12 @@
+         )
+ 
+         buildList {
++            byteArrayFactoryProxy?.let { factory ->
++                addAll(factory.createSirBridges {
++                    "kotlin.ByteArray(${argNames.joinToString()})"
++                })
++                return@buildList
++            }
+             addAll(
+                 bridgeAllocProxy?.createSirBridges {
+                     val args = argNames
+@@ -176,6 +182,14 @@
+     override var body: SirFunctionBody?
+         set(_) {}
+         get() = withSessions {
++            byteArrayFactoryProxy?.let { factory ->
++                return@withSessions SirFunctionBody(buildList {
++                    addAll(factory.createSwiftInvocation {
++                        "let ${obj.name} = $it"
++                    })
++                    add("super.init(__externalRCRefUnsafe: ${obj.name}, options: .asBoundBridge);")
++                })
++            }
+             val initDescriptor = bridgeInitProxy ?: return@withSessions null
+             val allocDescriptor = bridgeAllocProxy ?: return@withSessions null
+ 
+@@ -195,6 +209,28 @@
+                 addAll(initDescriptor.createSwiftInvocation(resultTransformer = null))
+             })
+         }
++
++    private val byteArrayFactoryProxy: BridgeFunctionProxy? by lazyWithSessions {
++        val fqName = ktSymbol.containingClassId?.asSingleFqName()
++            ?.takeIf { it.asString() == "kotlin.ByteArray" }
++            ?: return@lazyWithSessions null
++        if (isUnavailable) return@lazyWithSessions null
++
++        generateFunctionBridge(
++            baseBridgeName = fqName.baseBridgeName + "_init_create",
++            explicitParameters = parameters,
++            returnType = obj.type,
++            kotlinFqName = fqName,
++            kotlinOptIns = ktSymbol.allRequiredOptIns,
++            selfParameter = null,
++            contextParameters = emptyList(),
++            extensionReceiverParameter = null,
++            errorParameter = errorType.takeIf { it != SirType.never }?.let {
++                SirParameter(null, "__error", it)
++            },
++            isAsync = false,
++        )
++    }
+ 
+     private val bridgeAllocProxy: BridgeFunctionProxy? by lazyWithSessions {
+         if (!isBridged || bridgeInitProxy == null) return@lazyWithSessions null
