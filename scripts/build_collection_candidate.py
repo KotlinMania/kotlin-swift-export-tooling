@@ -131,6 +131,7 @@ def main():
         run(['java', '-cp', audit_cp, 'ClassAuditKt', str(directory), str(root / (label + '-canonical')),
              *entries], root / (label + '-attributes.log'), env)
     expected = [
+        'org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsContravariantBlock$inSwiftSources$1.class',
         'org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray.class',
         'org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection$InSwiftSources.class',
         'org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection.class',

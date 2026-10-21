@@ -30,14 +30,16 @@
     }
   },
   "patch": "producer/collections/TypeBridging.kt.patch",
-  "patch_sha256": "c044ce4168005abf9d646f953e79ed51bf161425a4f7ff5cf6cff8c44407fa4e",
-  "candidate_source_sha256": "166b43b5e8d63d259ce0af9a198290d503b091788c2c58285201d03d408ca157",
+  "patch_sha256": "653ba80950d0f9e50ce38c769f1775ff4ea383615cbd95431d6ba3e206c4d9a5",
+  "candidate_source_sha256": "82ea975fb2948ab0aaffa6def7de064dd3710c100868121d50c83335cbeedbf2",
   "scope": "Recursive exact String/List/String-keyed-Map Foundation import identity; Native carrier and nonidentity conversions retained.",
   "native_swift_execution": "not yet performed; coordinate before allocation",
   "class_modules": {
     "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray.class": "org.jetbrains.kotlin_sir-providers",
     "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection$InSwiftSources.class": "org.jetbrains.kotlin:sir-providers",
     "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection.class": "org.jetbrains.kotlin_sir-providers",
-    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSDictionary.class": "org.jetbrains.kotlin_sir-providers"
-  }
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSDictionary.class": "org.jetbrains.kotlin_sir-providers",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsContravariantBlock$inSwiftSources$1.class": "org.jetbrains.kotlin_sir-providers"
+  },
+  "callback_context": "Preserve the prior checked dictionary/list conversion for explicitly erased Any/Any? implementation parameters; no public API erasure added."
 }

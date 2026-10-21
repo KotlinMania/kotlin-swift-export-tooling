@@ -38,3 +38,19 @@
          override val requiresNativeCarrier: Boolean get() = keyBridge.hasNativeCarrier() || valueBridge.hasNativeCarrier()
          override val objcFoundationClass: String get() = "NSDictionary"
          override fun nativeValueType(typeNamer: SirTypeNamer): String = "kotlin.collections.Map<${keyBridge.collectionValueType(typeNamer)}, ${valueBridge.collectionValueType(typeNamer)}>"
+@@ -1143,7 +1154,14 @@
+                 } ?: ""
+                 val mappedArgs = allArgs.takeIf { it.isNotEmpty() }?.joinToString(separator = "\n", postfix = "\n") { [name, bridge] ->
+                     val fqName = typeNamer.swiftFqName(bridge.swiftType)
+-                    "let _$name: $fqName = ${bridge.inSwiftSources.kotlinToSwift(typeNamer, name)}"
++                    val converted = bridge.inSwiftSources.kotlinToSwift(typeNamer, name)
++                    val collection = bridge is AsNSCollection ||
++                            (bridge is AsOptionalWrapper && bridge.wrappedObject is AsNSCollection)
++                    val inputType = bridge.cType.toSwiftTypeName()
++                    val expression = if (collection && converted == name && (inputType == "Any" || inputType == "Any?")) {
++                        "$name as! $fqName"
++                    } else converted
++                    "let _$name: $fqName = $expression"
+                 } ?: ""
+                 val callAsyncArgs = asyncArgs?.map { [name, _] -> "_$name" }
+                 val callContextArg = contextArgs.takeIf {
