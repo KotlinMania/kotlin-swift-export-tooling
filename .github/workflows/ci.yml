@@ -26,7 +26,7 @@ jobs:
         run: |
           python3 scripts/build.py --output build/reproduction-a --cache build/inputs
           python3 scripts/build.py --output build/reproduction-b --cache build/inputs
-          cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.1.jar build/reproduction-b/swift-export-embeddable-2.4.20-km.1.jar
+          cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.2.jar build/reproduction-b/swift-export-embeddable-2.4.20-km.2.jar
           python3 -m unittest discover -s tests -v
           python3 scripts/distribution.py --build build/reproduction-a --output build/distribution-a
           python3 scripts/distribution.py --build build/reproduction-b --output build/distribution-b
@@ -38,7 +38,7 @@ jobs:
       - name: Use the actual packaged helper
         run: |
           mkdir build/helper
-          unzip -q build/distribution-a/swift-export-embeddable-2.4.20-km.1-native-sdk-helper.zip -d build/helper
+          unzip -q build/distribution-a/swift-export-embeddable-2.4.20-km.2-native-sdk-helper.zip -d build/helper
           shasum -a 256 build/helper/scripts/prepare_native_sdk.py > build/helper-source-before.txt
           python3 build/helper/scripts/prepare_native_sdk.py --source build/official-sdk/kotlin-native-prebuilt-macos-aarch64-2.4.20 --destination build/native-sdk --receipt build/native-sdk-audit.json
           shasum -a 256 -c build/helper-source-before.txt
@@ -53,14 +53,16 @@ jobs:
           java-version: '21'
       - name: Real Native link and three unchanged Swift behaviors
         run: python3 scripts/consumer.py --consumer build/consumer-source --output build/native-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/helper/scripts/prepare_native_sdk.py
+      - name: Typed Array ownership and real Swift behavior
+        run: python3 scripts/array_consumer.py --output build/array-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/helper/scripts/prepare_native_sdk.py
       - name: Preserve all proof and first failure
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: reproducibility-native-swift-proof
           path: |
-            build/reproduction-*/*.json
-            build/reproduction-*/*.log
+            build/reproduction-*/**/*.json
+            build/reproduction-*/**/*.log
             build/distribution-a/
             build/resolved-worker.json
             build/native-sdk-audit.json
@@ -68,4 +70,9 @@ jobs:
             build/official-sdk/download.json
             build/native-consumer/*.json
             build/native-consumer/logs/
+            build/array-consumer/*.json
+            build/array-consumer/logs/
+            build/array-consumer/native-boundary/*.log
+            build/array-consumer/iterator/*.json
+            build/array-consumer/iterator/swift.log
           retention-days: 14

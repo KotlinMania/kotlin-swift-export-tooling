@@ -1,0 +1,83 @@
+import Foundation
+
+public final class KotlinStringArray: NSObject {
+    private let reference: Swift.UnsafeMutableRawPointer
+
+    package init(__externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?) {
+        guard let reference = __externalRCRefUnsafe else {
+            preconditionFailure("Missing Kotlin string array reference")
+        }
+        self.reference = reference
+        super.init()
+    }
+
+    deinit { KotlinBridgeable_disposeRef(reference) }
+
+    package func __copyExternalRCRef() -> Swift.UnsafeMutableRawPointer {
+        withExtendedLifetime(self) { KotlinStringArrayCopyRef(reference) }
+    }
+
+    public override var hash: Swift.Int {
+        withExtendedLifetime(self) { Swift.Int(KotlinStringArrayHash(reference)) }
+    }
+
+    public override func isEqual(_ object: Any?) -> Swift.Bool {
+        guard let other = object as? KotlinStringArray else { return false }
+        return withExtendedLifetime((self, other)) {
+            KotlinStringArrayEquals(reference, other.reference)
+        }
+    }
+
+    package func __asObjC() -> NSObject {
+        withExtendedLifetime(self) { KotlinStringArrayToObjC(reference) }
+    }
+
+    package static func __fromObjC(_ value: NSObject) -> KotlinStringArray {
+        KotlinStringArray(__externalRCRefUnsafe: KotlinStringArrayFromObjC(value))
+    }
+
+    public var size: Swift.Int32 {
+        withExtendedLifetime(self) {
+            KotlinStringArraySize(reference)
+        }
+    }
+
+    public func get(index: Swift.Int32) -> Swift.String {
+        withExtendedLifetime(self) {
+            KotlinStringArrayGet(reference, index)
+        }
+    }
+
+    public func set(index: Swift.Int32, value: Swift.String) {
+        withExtendedLifetime(self) {
+            KotlinStringArraySet(reference, index, value)
+        }
+    }
+
+    public func iterator() -> KotlinStringArrayIterator {
+        withExtendedLifetime(self) {
+            KotlinStringArrayIterator(__externalRCRefUnsafe: KotlinStringArrayCreateIterator(reference), options: .asBoundBridge)
+        }
+    }
+}
+
+public final class KotlinStringArrayIterator: KotlinRuntime.KotlinBase {
+    package override init(
+        __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?,
+        options: KotlinRuntime.KotlinBaseConstructionOptions
+    ) {
+        super.init(__externalRCRefUnsafe: __externalRCRefUnsafe, options: options)
+    }
+
+    public func hasNext() -> Swift.Bool {
+        withExtendedLifetime(self) {
+            KotlinStringArrayIteratorHasNext(self.__externalRCRef())
+        }
+    }
+
+    public func next() -> Swift.String {
+        withExtendedLifetime(self) {
+            KotlinStringArrayIteratorNext(self.__externalRCRef())
+        }
+    }
+}

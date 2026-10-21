@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Stage the verified POM and main component for real Maven dependency resolution."""
 import argparse
+import json
 from pathlib import Path
 import shutil
 from check_distribution import validate
@@ -10,9 +11,10 @@ parser.add_argument('--distribution', type=Path, required=True)
 parser.add_argument('--repository', type=Path, required=True)
 args = parser.parse_args()
 validate(args.distribution)
-target = args.repository / 'io/github/kotlinmania/swift-export-embeddable/2.4.20-km.1'
+version = json.loads((Path(__file__).resolve().parents[1] / 'inputs.lock.json').read_text())['version']
+target = args.repository / 'io/github/kotlinmania/swift-export-embeddable' / version
 assert not target.exists()
 target.mkdir(parents=True)
 for suffix in ['.pom', '.jar']:
-    name = 'swift-export-embeddable-2.4.20-km.1' + suffix
+    name = 'swift-export-embeddable-' + version + suffix
     shutil.copyfile(args.distribution / name, target / name)

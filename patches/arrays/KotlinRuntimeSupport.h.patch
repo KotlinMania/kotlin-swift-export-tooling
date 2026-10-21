@@ -1,0 +1,23 @@
+--- a/KotlinRuntimeSupport.h
++++ b/KotlinRuntimeSupport.h
+@@ -57,4 +57,20 @@
+ int32_t KotlinBridgeable_getTypeTag(void * ref);
+ void KotlinBridgeable_disposeRef(void * ref);
+ 
++
++int32_t KotlinStringArraySize(void * reference);
++NSString * KotlinStringArrayGet(void * reference, int32_t index);
++void KotlinStringArraySet(void * reference, int32_t index, NSString * value);
++void * KotlinStringArrayCreateIterator(void * reference);
++_Bool KotlinStringArrayIteratorHasNext(void * reference);
++NSString * KotlinStringArrayIteratorNext(void * reference);
++
++NSObject * KotlinStringArrayToObjC(void * reference);
++void * KotlinStringArrayFromObjC(NSObject * value);
++
++void * KotlinStringArrayCopyRef(void * reference);
++
++int32_t KotlinStringArrayHash(void *reference);
++_Bool KotlinStringArrayEquals(void *left, void *right);
++
+ NS_ASSUME_NONNULL_END

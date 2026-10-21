@@ -50,6 +50,9 @@ def run(arguments, log, env=None):
 
 def build(output, cache, seeds):
     lock = json.loads((REPO / 'inputs.lock.json').read_text())
+    if 'array_repair' in lock:
+        from build_arrays import build_arrays
+        return build_arrays(output, cache, seeds, lock)
     for relative, expected in lock['licenses'].items():
         check(digest((REPO / relative).read_bytes()) == expected, 'License/notice checksum mismatch: ' + relative)
     check(not output.exists(), 'Build output must be a new directory')

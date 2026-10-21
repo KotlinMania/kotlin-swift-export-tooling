@@ -34,11 +34,13 @@
    key as well as the recorded checksums. Retain the public key fingerprint and
    verification result. The retrieval script checks contents/checksums and
    preserves signatures; signature presence alone is not cryptographic proof.
-7. Create the matching `v2.4.20-km.1` GitHub release at the verified main revision.
+7. Create the matching `v2.4.20-km.2` GitHub release at the verified main revision.
    `publish.yml` independently verifies the already published immutable files; it
    deliberately does not create or configure persistent access credentials.
 8. Hand the immutable Maven coordinate, six checksums, helper invocation, SDK
-   audit and exact CI/retrieval receipts to the existing ProcMacro2 owner. That
-   repository must validate actual production selection and its own final gates
-   before releasing. Syn then selects the actual new published ProcMacro2
-   version. No broader consumer selection follows automatically.
+   audit and exact CI/retrieval receipts to the existing consumer owners. The
+   Array update requires Whoami's four unchanged real Swift cases with the
+   published bytes, followed by that repository's final release gates. The
+   ProcMacro2 three-case regression remains required by this tooling's CI.
+   Neither consumer acceptance nor broader selection follows automatically
+   from the producer fixtures.

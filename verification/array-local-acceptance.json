@@ -1,0 +1,32 @@
+{
+  "version": "2.4.20-km.2",
+  "published": false,
+  "main_component_sha256": "56399f6ab0fac232ce6486819abc587933cac364f3e88cf1555dc7d9d4bebbe4",
+  "receipts": {
+    "reproducibility-verified.json": "ba13a6b8f392fb15c2b537bd5edfcb3a3c17dd11b052465dca408caee1449570",
+    "portable-array-v2/verified-result.json": "cf0ec09ace73af128622a7b60865b447b32df5b80469309331022643dbfaff82",
+    "iterator-v1/verified-result.json": "4ba7ebc7a226a58105ba6c1ddbb2169ffa55224229e56b63614843e76199a417",
+    "worker-resolution/build/resolved-worker.json": "0436a6ccf9458e6b8a680332e93d53ad69fd878bc6da89adf2777b38b12707f0",
+    "distribution-d/distribution.json": "31e465274b3d3010f545920267f056f375a50e8c3894aa2c49a8871d4e00302d"
+  },
+  "swift_array_cases": 27,
+  "swift_iterator_cases": 1,
+  "native_boundary_positive": 1,
+  "native_boundary_expected_abort_cases": 13,
+  "worker_components": 16,
+  "sdk_files_unchanged": 40932,
+  "dependency_swift_mode": 5,
+  "authored_swift_mode": 6,
+  "native_and_swift_warnings_as_errors": true,
+  "precompiled_client_compatibility_claimed": false,
+  "source_url_metadata_correction": {
+    "main_component_sha256": "5a0f81f2628c407f1551e35dc6e58f65b10cd09406f9f19d4afa6f672ec5ccf4",
+    "only_changed_jar_entries": [
+      "META-INF/kotlinmania/arrays.lock.json",
+      "META-INF/kotlinmania/inputs.lock.json"
+    ],
+    "reproducibility_receipt_sha256": "96108139ce9c89a9261aeaed82dc3195600b7f875aacbe84dbe8cfe0e9d81fda",
+    "executable_classes_and_runtime_resources_identical": true,
+    "exact_corrected_component_consumer_ci_required": true
+  }
+}
