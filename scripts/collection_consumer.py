@@ -165,16 +165,19 @@ let package = Package(name: "FoundationCollectionConstructor", platforms: [.macO
         if not module.endswith('PackageTests'):
             assert mode == ('6' if module == 'FoundationCollectionTests' else '5'), (module, mode)
         frontends.append({'module': module, 'mode': mode, 'werror': True, 'mac15': True})
-    assert {'FoundationCollectionTests', 'FoundationCollectionProof', 'KotlinRuntimeSupport', 'KotlinStdlib'} <= {row['module'] for row in frontends}
+    assert {'FoundationCollectionTests', 'FoundationCollectionProof', 'KotlinRuntimeSupport', 'ExportedKotlinPackages'} <= {row['module'] for row in frontends}
     verify()
     assert emitted_inventory() == emitted, 'Generated inventory changed'
     generated_swift = package / 'Sources/FoundationCollectionProof/FoundationCollectionProof.swift'
     generated_header = next((package / 'Sources').glob('*/include/FoundationCollectionProof.h'))
     swift_text = generated_swift.read_text()
     header_text = generated_header.read_text()
-    assert 'Dictionary<Swift.String, Swift.Array<Swift.String>>' in swift_text
+    assert 'Dictionary<Swift.String,Swift.Array<Swift.String>>' in re.sub(r'\s+', '', swift_text)
     assert 'NSDictionary<NSString *, NSArray<NSString *> *> *' in header_text
-    assert not re.search(r'FoundationCollectionProof_[^\n]*\([^\n]*\) as! Swift.Dictionary<Swift.String, Swift.Array<Swift.String>>', swift_text), 'Redundant direct conversion retained'
+    direct_returns = [line.strip() for line in swift_text.splitlines() if re.match(r'\s*return foundationproof_', line)]
+    assert len(direct_returns) >= 6
+    assert all(' as!' not in line for line in direct_returns), 'Redundant direct conversion retained'
+    assert re.search(r'let _arg0: .* = arg0 as! ', swift_text), 'Necessary erased implementation callback conversion missing'
     save('verified-result.json', {'accepted': True, 'configuration': options.configuration, 'tests': counts, 'frontends': frontends, 'manifest_frontends': manifest_frontends, 'native_archive_sha256': digest(archive), 'component_sha256': digest(component), 'sdk_files_unchanged': len(expected_sdk), 'candidate_audit_sha256': digest(audit_path) if audit_path else None, 'generated_swift_sha256': digest(generated_swift), 'generated_header_sha256': digest(generated_header), 'scope': 'String/List and String-keyed Dictionary Foundation identity; no general generic or concurrent-access proof'})
     print('PASS eleven real Foundation collection behaviors in ' + options.configuration, flush=True)
 
