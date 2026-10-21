@@ -5,6 +5,18 @@ import SwiftProvider
 
 @Suite(.serialized)
 struct ReverseImportTests {
+    @Test func explicitExportNamesPreservePropertiesAndCanonicalMethods() {
+        let color = ColorChannels(red: 17, green: 34, blue: 51, paletteIndex: 68)
+        #expect(color.rValue == 17)
+        #expect(color.r() == color.rValue)
+        #expect(color.gValue == 34)
+        #expect(color.g() == color.gValue)
+        #expect(color.bValue == 51)
+        #expect(color.b() == color.bValue)
+        #expect(color.indexValue == 68)
+        #expect(color.index() == color.indexValue)
+    }
+
     @Test func swiftProviderCallsThroughKotlinAndBackWithTypedIdentity() {
         let provider = NativeProvider(mode: .echo)
         let callback = NativePayloadCallback()

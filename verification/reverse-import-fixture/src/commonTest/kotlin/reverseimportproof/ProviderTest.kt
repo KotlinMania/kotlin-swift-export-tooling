@@ -9,6 +9,19 @@ import kotlin.test.assertTrue
 
 class ProviderTest {
     @Test
+    fun exportNamesDoNotReplaceKotlinOperations() {
+        val color = ColorChannels(17u, 34u, 51u, 68u)
+        assertEquals(17.toUByte(), color.r)
+        assertEquals(color.r, color.r())
+        assertEquals(34.toUByte(), color.g)
+        assertEquals(color.g, color.g())
+        assertEquals(51.toUByte(), color.b)
+        assertEquals(color.b, color.b())
+        assertEquals(68.toUByte(), color.index)
+        assertEquals(color.index, color.index())
+    }
+
+    @Test
     fun callbackPreservesConcretePayloadIdentity() {
         var calls = 0
         val value = Payload("typed")

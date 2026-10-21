@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 
 REPO = Path(__file__).resolve().parents[1]
 TESTS = [
+    'explicitExportNamesPreservePropertiesAndCanonicalMethods',
     'swiftProviderCallsThroughKotlinAndBackWithTypedIdentity',
     'swiftSuccessfulNullIsNotFailure',
     'independentSwiftFailureKeepsOriginalIdentity',
@@ -119,7 +120,7 @@ let package = Package(name: "ReverseImport", platforms: [.macOS(.v15)], dependen
     text = run('swift', ['/usr/bin/xcrun', 'swift', 'test', '-v', '-c', options.configuration.lower(), '--package-path', str(harness), '--scratch-path', str(root / 'swift-build'), '--cache-path', str(root / 'swiftpm/cache'), '--config-path', str(root / 'swiftpm/config'), '--security-path', str(root / 'swiftpm/security'), '--jobs', '2', '-Xswiftc', '-warnings-as-errors', '-Xswiftc', '-target', '-Xswiftc', 'arm64-apple-macosx15.0'], root)
     counts = {name: len(re.findall(r'Test ' + re.escape(name) + r'\(\)(?: \(aka [^\n]*?\))? passed', text)) for name in TESTS}
     assert all(value == 1 for value in counts.values()), counts
-    assert re.search(r'Test run with 4 tests(?: in \d+ suites?)? passed', text)
+    assert re.search(r'Test run with 5 tests(?: in \d+ suites?)? passed', text)
     assert not re.search(r'Test .* (?:failed|skipped)', text)
     frontends = []
     for line in text.splitlines():
@@ -147,14 +148,14 @@ let package = Package(name: "ReverseImport", platforms: [.macOS(.v15)], dependen
                 for case in report.findall('testcase'):
                     assert case.find('skipped') is None and case.find('failure') is None and case.find('error') is None
                     cases.append(case.get('name'))
-            assert len(cases) == 3, (target, cases)
-            for name in ['callbackPreservesConcretePayloadIdentity', 'successfulNullRemainsSuccess', 'failurePreservesOriginalObject']:
+            assert len(cases) == 4, (target, cases)
+            for name in ['exportNamesDoNotReplaceKotlinOperations', 'callbackPreservesConcretePayloadIdentity', 'successfulNullRemainsSuccess', 'failurePreservesOriginalObject']:
                 assert sum(case.startswith(name) for case in cases) == 1, (target, name, cases)
-            host_results.append({'target': target, 'count': 3, 'cases': cases, 'reports_sha256': {str(path): digest(path) for path in files}})
+            host_results.append({'target': target, 'count': 4, 'cases': cases, 'reports_sha256': {str(path): digest(path) for path in files}})
     verify()
     assert all(digest(path) == value for path, value in emitted.items())
     save('verified-result.json', {'accepted': True, 'configuration': options.configuration, 'tests': counts, 'frontends': frontends, 'native_archive_sha256': digest(archive), 'component_sha256': digest(component), 'sdk_files_unchanged': len(expected_sdk), 'host_results': host_results, 'generic_result_fidelity': 'not claimed', 'swift_error_catch_or_actor_safety': 'not claimed'})
-    print('PASS four real reverse-import behaviors in ' + options.configuration, flush=True)
+    print('PASS five real reverse-import/naming behaviors in ' + options.configuration, flush=True)
 
 
 if __name__ == '__main__':
