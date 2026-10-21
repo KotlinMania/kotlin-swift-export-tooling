@@ -1,0 +1,14 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+
+plugins { id 'org.jetbrains.kotlin.multiplatform' version '2.4.20' }
+repositories { mavenCentral() }
+kotlin {
+    macosArm64()
+    jvm()
+    js { nodejs() }
+    wasmJs { nodejs() }
+    wasmWasi { nodejs() }
+    swiftExport { moduleName = 'ReverseImportProof'; flattenPackage = 'reverseimportproof' }
+    sourceSets { commonTest { dependencies { implementation kotlin('test') } } }
+}
+tasks.withType(KotlinCompilationTask).configureEach { compilerOptions.allWarningsAsErrors.set(true) }
