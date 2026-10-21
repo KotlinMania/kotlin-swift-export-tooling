@@ -1,0 +1,48 @@
+--- a/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirEnumFromKtSymbol.kt
++++ b/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirEnumFromKtSymbol.kt
+@@ -165,7 +165,7 @@
+         val separator = "\n                    "
+         val caseSelector = cases.joinToString(separator = separator) {
+             "case .${it.name}: ${it.nativeCaseRepresentation()}"
+-        } + defaultBranch(separator)
++        } + if (cases.isEmpty()) defaultBranch(separator) else ""
+         body = SirFunctionBody(
+             listOf(
+                 """
+@@ -187,7 +187,7 @@
+         getter = buildGetter {
+             val caseSelector = cases.joinToString(separator = separator) {
+                 "case .${it.name}: \"${it.name}\""
+-            } + defaultBranch(separator)
++            } + if (cases.isEmpty()) defaultBranch(separator) else ""
+             body = SirFunctionBody(
+                 listOf(
+                     """
+@@ -231,7 +231,7 @@
+         getter = buildGetter {
+             val caseSelector = cases.joinToString(separator = separator) {
+                 "case .${it.name}: ${index++}"
+-            } + defaultBranch(separator)
++            } + if (cases.isEmpty()) defaultBranch(separator) else ""
+             body = SirFunctionBody(
+                 listOf(
+                     """
+@@ -254,10 +254,14 @@
+         )
+         body = SirFunctionBody(
+             listOf(
+-                """
+-                    guard 0..<${cases.size} ~= rawValue else { return nil }
+-                    self = $name.allCases[Int(rawValue)]
+-                """.trimIndent()
++                if (cases.isEmpty()) {
++                    "return nil"
++                } else {
++                    """
++                        guard 0..<${cases.size} ~= rawValue else { return nil }
++                        self = $name.allCases[Int(rawValue)]
++                    """.trimIndent()
++                }
+             )
+         )
+     }.also { it.parent = this }

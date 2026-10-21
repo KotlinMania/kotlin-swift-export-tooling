@@ -1,0 +1,224 @@
+--- a/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirBridgeProviderImpl.kt
++++ b/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirBridgeProviderImpl.kt
+@@ -16,6 +16,7 @@
+ import org.jetbrains.kotlin.sir.providers.utils.KotlinRuntimeModule
+ import org.jetbrains.kotlin.sir.providers.utils.KotlinRuntimeSupportModule
+ import org.jetbrains.kotlin.name.ClassId
++import org.jetbrains.kotlin.sir.util.SirSwiftModule
+ import org.jetbrains.kotlin.sir.util.isNever
+ import org.jetbrains.kotlin.sir.util.name
+ import org.jetbrains.kotlin.sir.util.renderAsSwiftSourceLine
+@@ -146,6 +147,7 @@
+ }
+ 
+ public interface BridgeFunctionProxy {
++    public fun registerCallbackCarrier(functionType: String): String
+     context(sir: SirSession)
+     public fun createSirBridges(kotlinCall: BridgeFunctionBuilder.() -> String): List<SirBridge>
+ 
+@@ -190,6 +192,13 @@
+     val kotlinBridgeName = bridgeDeclarationName(baseBridgeName, parameters, contextParameters, extensionReceiverParameter, typeNamer)
+     val cBridgeName = kotlinBridgeName
+     val directCBridgeName get() = "${cBridgeName}_direct"
++    private var callbackCarrierType: String? = null
++
++    override fun registerCallbackCarrier(functionType: String): String {
++        check(callbackCarrierType == null || callbackCarrierType == functionType)
++        callbackCarrierType = functionType
++        return "${kotlinBridgeName}_Callback"
++    }
+ 
+     context(session: SirSession)
+     val allParameters
+@@ -201,7 +210,7 @@
+         Triple(
+             BridgedParameter.In(
+                 name = "continuation",
+-                bridge = Bridge.AsContravariantBlock(parameters = listOf(returnType), returnType = Bridge.AsVoid)
++                bridge = Bridge.AsContravariantBlock(parameters = listOf(returnType), returnType = Bridge.AsVoid).transferringParameters()
+             ),
+             BridgedParameter.In(
+                 name = "exception",
+@@ -218,6 +227,108 @@
+         )
+     }
+ 
++    context(session: SirSession)
++    private fun managedResultParameters(): List<BridgedParameter> {
++        val async = asyncParameters ?: error("Managed result requires an async bridge")
++        val readiness = BridgedParameter.In(
++            name = async.first.name,
++            bridge = Bridge.AsContravariantBlock(
++                parameters = listOf(Bridge.AsIs(SirSwiftModule.bool, KotlinType.Boolean, CType.Bool)),
++                returnType = Bridge.AsVoid,
++            ),
++        )
++        return listOfNotNull(selfParameter) + parameters + listOf(readiness, async.second, async.third)
++    }
++
++    context(session: SirSession)
++    private fun managedResultCDeclarations(readyName: String, takeName: String): List<String> = buildList {
++        add(CType.Bool.render(readyName + "(" + managedResultParameters().joinToString {
++            it.bridge.cType.render(it.name.cIdentifier)
++        } + ")") + ";")
++        if (returnType != Bridge.AsNothing) {
++            add(returnType.cType.render("$takeName(void * cancellation)") + ";")
++        }
++    }
++
++    context(session: SirSession)
++    private fun managedResultKotlinDeclarations(
++        buildCallSite: BridgeFunctionBuilder.() -> String,
++        readyName: String,
++        takeName: String,
++        nonVirtualTargetMethod: String? = null,
++    ): List<String> = buildList {
++        val managed = managedResultParameters()
++        val nonVirtual = nonVirtualTargetMethod?.let { ", nonVirtualTargetMethod = \"$it\"" }.orEmpty()
++        if (returnType != Bridge.AsNothing) {
++            if (kotlinOptIns.isNotEmpty()) {
++                add(kotlinOptIns.joinToString(prefix = "@kotlin.OptIn(", postfix = ")") { it.asFqNameString() + "::class" })
++            }
++            val resultType = typeNamer.kotlinFqName(returnType.swiftType, SirTypeNamer.KotlinNameType.PARAMETRIZED)
++            add("private class ${readyName}_Result(val value: $resultType)")
++        }
++        add("@${exportAnnotationFqName.substringAfterLast('.')}(\"$readyName\"$nonVirtual)")
++        if (kotlinOptIns.isNotEmpty()) {
++            add(kotlinOptIns.joinToString(prefix = "@kotlin.OptIn(", postfix = ")") { it.asFqNameString() + "::class" })
++        }
++        add("public fun $readyName(" + managed.joinToString {
++            "${it.name.kotlinIdentifier}: ${it.bridge.kotlinType.repr}"
++        } + "): Unit {")
++        managed.forEach {
++            val localName = "__${it.name}".kotlinIdentifier
++            add("    val $localName = ${it.bridge.inKotlinSources.swiftToKotlin(typeNamer, it.name.kotlinIdentifier)}")
++        }
++        val async = asyncParameters ?: error("Managed result requires an async bridge")
++        val continuationName = "__${async.first.name}".kotlinIdentifier
++        val exceptionName = "__${async.second.name}".kotlinIdentifier
++        val cancellationName = "__${async.third.name}".kotlinIdentifier
++        add("    swiftCoroutineReady($continuationName, $exceptionName, $cancellationName) {")
++        if (returnType == Bridge.AsNothing) {
++            add(buildCallSite().prependIndent("        "))
++        } else {
++            add("        ${readyName}_Result(run {")
++            add(buildCallSite().prependIndent("            "))
++            add("        })")
++        }
++        add("    }")
++        add("}")
++        if (returnType != Bridge.AsNothing) {
++            add("@${exportAnnotationFqName.substringAfterLast('.')}(\"$takeName\")")
++            if (kotlinOptIns.isNotEmpty()) {
++                add(kotlinOptIns.joinToString(prefix = "@kotlin.OptIn(", postfix = ")") { it.asFqNameString() + "::class" })
++            }
++            add("public fun $takeName(cancellation: kotlin.native.internal.NativePtr): ${returnType.kotlinType.repr} {")
++            val job = async.third.bridge.inKotlinSources.swiftToKotlin(typeNamer, "cancellation")
++            add("    val __cancellation = $job")
++            add("    val _result = (__cancellation.takeSwiftResult() as ${readyName}_Result).value")
++            add("    return ${returnType.inKotlinSources.kotlinToSwift(typeNamer, "_result")}")
++            add("}")
++        }
++    }
++
++    context(session: SirSession)
++    private fun managedResultSwiftCall(argumentOverrides: Map<String, String>, useDirectDispatch: Boolean): String {
++        val async = asyncParameters ?: error("Managed result requires an async bridge")
++        val bridgeName = if (useDirectDispatch) directCBridgeName else cBridgeName
++        val readyName = "${bridgeName}_ready"
++        val takeName = "${bridgeName}_takeResult"
++        val arguments = managedResultParameters().joinToString {
++            val name = it.name.takeIf { name -> name == "self" } ?: it.name.swiftIdentifier
++            argumentOverrides[name] ?: it.bridge.inSwiftSources.swiftToKotlin(typeNamer, name)
++        }
++        val result = if (returnType == Bridge.AsNothing) {
++            "fatalError(\"A Nothing-returning Kotlin coroutine completed successfully\")"
++        } else {
++            returnType.inSwiftSources.kotlinToSwift(typeNamer, "$takeName(cancellation.__externalRCRef())")
++        }
++        return """
++            try await withKotlinContinuationReady({ ${async.first.name.swiftIdentifier}, ${async.second.name.swiftIdentifier}, ${async.third.name.swiftIdentifier} in
++                let _: Bool = $readyName($arguments)
++            }, result: { cancellation in
++                $result
++            })
++        """.trimIndent()
++    }
++
+     override val name
+         get() = kotlinFqName.pathSegments().joinToString(separator = ".") { it.asString().kotlinIdentifier }
+ 
+@@ -271,12 +382,37 @@
+                 SirFunctionBridge(
+                     name = baseBridgeName,
+                     KotlinFunctionBridge(
+-                        createKotlinBridge(typeNamer, buildCallSite = kotlinCall),
++                        callbackCarrierType?.let { functionType ->
++                            val declarations = mutableListOf<String>()
++                            if (kotlinOptIns.isNotEmpty()) {
++                                val annotation = StringBuilder("@kotlin.OptIn(")
++                                for (index in kotlinOptIns.indices) {
++                                    if (index > 0) annotation.append(", ")
++                                    annotation.append(kotlinOptIns[index].asFqNameString()).append("::class")
++                                }
++                                declarations.add(annotation.append(")").toString())
++                            }
++                            declarations.add("private class ${kotlinBridgeName}_Callback(val block: $functionType)")
++                            declarations
++                        }.orEmpty() + createKotlinBridge(typeNamer, buildCallSite = kotlinCall),
+                         listOf(exportAnnotationFqName, cinterop, convertBlockPtrToKotlinFunction) + additionalImports()
+                     ),
+                     CFunctionBridge(listOf(cDeclaration()), listOf(foundationHeader, stdintHeader))
+                 )
+             )
++            if (isAsync) {
++                add(SirFunctionBridge(
++                    name = "${baseBridgeName}_ready",
++                    KotlinFunctionBridge(
++                        managedResultKotlinDeclarations(kotlinCall, "${cBridgeName}_ready", "${cBridgeName}_takeResult"),
++                        listOf(exportAnnotationFqName, cinterop, convertBlockPtrToKotlinFunction) + additionalImports(),
++                    ),
++                    CFunctionBridge(
++                        managedResultCDeclarations("${cBridgeName}_ready", "${cBridgeName}_takeResult"),
++                        listOf(foundationHeader, stdintHeader),
++                    ),
++                ))
++            }
+             val allBridges = parameters.mapTo(mutableListOf<Bridge>()) { it.bridge }
+             selfParameter?.let { allBridges.add(it.bridge) }
+             extensionReceiverParameter?.let { allBridges.add(it.bridge) }
+@@ -296,10 +432,15 @@
+     ): SirBridge = SirFunctionBridge(
+         name = "${baseBridgeName}_direct",
+         KotlinFunctionBridge(
+-            createKotlinBridge(typeNamer, bridgeName = directCBridgeName, nonVirtualTargetMethod = nonVirtualTargetMethod, buildCallSite = kotlinCall),
++            createKotlinBridge(typeNamer, bridgeName = directCBridgeName, nonVirtualTargetMethod = nonVirtualTargetMethod, buildCallSite = kotlinCall) +
++                    if (isAsync) managedResultKotlinDeclarations(kotlinCall, "${directCBridgeName}_ready", "${directCBridgeName}_takeResult", nonVirtualTargetMethod) else emptyList(),
+             listOf(exportAnnotationFqName, cinterop, convertBlockPtrToKotlinFunction) + additionalImports()
+         ),
+-        CFunctionBridge(listOf(cDeclaration(bridgeName = directCBridgeName)), listOf(foundationHeader, stdintHeader))
++        CFunctionBridge(
++            listOf(cDeclaration(bridgeName = directCBridgeName)) +
++                    if (isAsync) managedResultCDeclarations("${directCBridgeName}_ready", "${directCBridgeName}_takeResult") else emptyList(),
++            listOf(foundationHeader, stdintHeader),
++        )
+     )
+ 
+     context(session: SirSession)
+@@ -312,7 +453,7 @@
+             add("let (${contextParameters.joinToString { it.name.swiftIdentifier }}) = context")
+         }
+         if (isAsync) {
+-            add(descriptor.swiftAsyncCall(typeNamer, argumentOverrides, useDirectDispatch))
++            add(descriptor.managedResultSwiftCall(argumentOverrides, useDirectDispatch))
+         } else if (errorParameter != null) {
+             add("var ${errorParameter.name}: UnsafeMutableRawPointer? = nil")
+             add("let _result = ".takeIf { resultTransformer != null }.orEmpty() + descriptor.swiftInvocationLineForCBridge(typeNamer, argumentOverrides, useDirectDispatch))
+@@ -594,6 +735,7 @@
+             }
+             val callExpr = swiftDynamicCall(if (selfBridge != null) "_self" else selfConversion, convertedParamExprs)
+             val swiftReturnTypeName = typeNamer.swiftFqName(returnType.swiftType)
++            if (returnType == Bridge.AsNothing) { add("    $callExpr"); add("}"); return@buildList }
+             add("    let _result: $swiftReturnTypeName = $callExpr")
+ 
+             val returnBridge = returnType

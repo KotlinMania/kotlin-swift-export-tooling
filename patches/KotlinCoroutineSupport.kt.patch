@@ -1,0 +1,180 @@
+--- a/native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.kt
++++ b/native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.kt
+@@ -8,6 +8,7 @@
+ import kotlinx.cinterop.*
+ import kotlinx.cinterop.internal.convertBlockPtrToKotlinFunction
+ import kotlin.concurrent.atomics.AtomicReference
++import kotlin.concurrent.atomics.AtomicInt
+ import kotlin.native.internal.ExportedBridge
+ import kotlin.plus
+ import platform.Foundation.NSError
+@@ -27,8 +28,24 @@
+  *
+  * This type is a manually bridged counterpart to KotlinTask type in Swift
+  */
+-@OptIn(InternalCoroutinesApi::class, kotlin.concurrent.atomics.ExperimentalAtomicApi::class)
++@OptIn(InternalCoroutinesApi::class, InternalForInheritanceCoroutinesApi::class, kotlin.concurrent.atomics.ExperimentalAtomicApi::class)
+ class SwiftJob private constructor() : Job by Job() {
++    private class PublishedResult(val value: Any?)
++    private val publishedResult = AtomicReference<PublishedResult?>(null)
++
++    fun publishSwiftResult(value: Any?) {
++        check(publishedResult.compareAndSet(null, PublishedResult(value))) {
++            "A Swift job already has an unconsumed result"
++        }
++    }
++
++    fun discardSwiftResult() {
++        publishedResult.exchange(null)
++    }
++
++    fun takeSwiftResult(): Any? = checkNotNull(publishedResult.exchange(null)) {
++        "A Swift job has no published result"
++    }.value
+ 
+     constructor(cancellationCallback: () -> Unit) : this() {
+         setCallback(cancellationCallback)
+@@ -70,6 +87,27 @@
+     }.let(cancellation::setKotlinJob)
+ }
+ 
++@OptIn(InternalCoroutinesApi::class)
++public fun <T> swiftCoroutineReady(
++    continuation: (Boolean) -> Unit,
++    exception: (Any?) -> Unit,
++    cancellation: SwiftJob,
++    block: suspend CoroutineScope.() -> T
++) {
++    CoroutineScope(cancellation + Dispatchers.Default).launch(start = CoroutineStart.UNDISPATCHED) {
++        try {
++            cancellation.publishSwiftResult(block())
++            continuation(true)
++        } catch (error: CancellationException) {
++            cancellation.discardSwiftResult()
++            exception(null)
++        } catch (error: Throwable) {
++            cancellation.discardSwiftResult()
++            exception(error)
++        }
++    }.let(cancellation::setKotlinJob)
++}
++
+ public suspend fun <T> suspendSwiftCoroutine(
+     block: ((T) -> Unit, (NSError?) -> Unit, SwiftJob) -> Unit
+ ): T {
+@@ -126,6 +164,30 @@
+     private object Retry
+     private class Throw(val exception: Throwable)
+     inner class Value(val value: T)
++    private class PublishedSwiftValue(val value: Any?)
++    private val publishedSwiftValue = AtomicReference<PublishedSwiftValue?>(null)
++    private val swiftRequestActive = AtomicInt(0)
++    
++    fun beginSwiftRequest(): Boolean = swiftRequestActive.compareAndSet(0, 1)
++    
++    fun finishSwiftRequest() {
++        publishedSwiftValue.store(null)
++        swiftRequestActive.store(0)
++    }
++
++    fun publishSwiftValue(value: Any?) {
++        check(publishedSwiftValue.compareAndSet(null, PublishedSwiftValue(value))) {
++            "KotlinFlowIterator has an unconsumed Swift value"
++        }
++    }
++
++    fun takeSwiftValue(): Any? {
++        val value = publishedSwiftValue.exchange(null)
++            ?: error("KotlinFlowIterator has no published Swift value")
++        swiftRequestActive.store(0)
++        return value.value
++    }
++
+ 
+     private sealed interface State {
+         // State transitions:
+@@ -224,7 +286,11 @@
+                 is State.AwaitingProducer -> {
+                     error("KotlinFlowIterator doesn't support concurrent receivers")
+                 }
+-                is State.Completed -> return state.error?.let { throw it } ?: null
++                is State.Completed -> {
++                    val error = state.error
++                    if (error != null) throw error
++                    return null
++                }
+             }
+         }
+     }
+@@ -251,22 +317,38 @@
+ 
+ @ExportedBridge("_kotlin_swift_SwiftFlowIterator_cancel")
+ public fun SwiftFlowIterator_cancel(self: kotlin.native.internal.NativePtr): Unit {
+-    val __self = kotlin.native.internal.ref.dereferenceExternalRCRefOrNull(self) as SwiftFlowIterator<kotlin.Any?>?
++    val __self = kotlin.native.internal.ref.dereferenceExternalRCRefOrNull(self) as SwiftFlowIterator<*>?
+     __self?.cancel()
+ }
+ 
+ @ExportedBridge("_kotlin_swift_SwiftFlowIterator_next")
+ public fun SwiftFlowIterator_next(self: kotlin.native.internal.NativePtr, continuation: kotlin.native.internal.NativePtr, exception: kotlin.native.internal.NativePtr, cancellation: kotlin.native.internal.NativePtr): Unit {
+-    val __self = kotlin.native.internal.ref.dereferenceExternalRCRef(self) as SwiftFlowIterator<kotlin.Any?>
++    SwiftFlowIterator_nextImpl(self, continuation, exception, cancellation, false)
++}
++
++@ExportedBridge("_kotlin_swift_SwiftFlowIterator_nextReady")
++public fun SwiftFlowIterator_nextReady(self: kotlin.native.internal.NativePtr, continuation: kotlin.native.internal.NativePtr, exception: kotlin.native.internal.NativePtr, cancellation: kotlin.native.internal.NativePtr): Unit {
++    SwiftFlowIterator_nextImpl(self, continuation, exception, cancellation, true)
++}
++
++private fun SwiftFlowIterator_nextImpl(self: kotlin.native.internal.NativePtr, continuation: kotlin.native.internal.NativePtr, exception: kotlin.native.internal.NativePtr, cancellation: kotlin.native.internal.NativePtr, publishForSwift: Boolean): Unit {
++    val __self = kotlin.native.internal.ref.dereferenceExternalRCRef(self) as SwiftFlowIterator<*>
++    val ownsRequest = __self.beginSwiftRequest()
+     val __continuation = run {
+         val kotlinFun = convertBlockPtrToKotlinFunction<(kotlin.Boolean, kotlin.native.internal.NativePtr)->Unit>(continuation);
+-        { arg0: SwiftFlowIterator<kotlin.Any?>.Value? ->
++        { arg0: SwiftFlowIterator<*>.Value? ->
+             val _result = if (arg0 == null) {
++                __self.finishSwiftRequest()
+                 kotlinFun(false, kotlin.native.internal.NativePtr.NULL)
++            } else if (publishForSwift) {
++                __self.publishSwiftValue(arg0.value)
++                kotlinFun(true, kotlin.native.internal.NativePtr.NULL)
+             } else {
+                 val value = arg0.value
+-                val _value = if (value == null) kotlin.native.internal.NativePtr.NULL else kotlin.native.internal.ref.createRetainedExternalRCRef(value)
+-                kotlinFun(true, _value)
++                val reference = if (value == null) kotlin.native.internal.NativePtr.NULL
++                else kotlin.native.internal.ref.createRetainedExternalRCRef(value)
++                __self.finishSwiftRequest()
++                kotlinFun(true, reference)
+             }
+             _result
+         }
+@@ -274,14 +356,27 @@
+     val __exception = run {
+         val kotlinFun = convertBlockPtrToKotlinFunction<(kotlin.native.internal.NativePtr)->Unit>(exception);
+         { arg0: kotlin.Any? ->
++            if (ownsRequest) __self.finishSwiftRequest()
+             val _result = kotlinFun(if (arg0 == null) kotlin.native.internal.NativePtr.NULL else kotlin.native.internal.ref.createRetainedExternalRCRef(arg0))
+             _result
+         }
++    }
++    if (!ownsRequest) {
++        __exception(IllegalStateException("KotlinFlowIterator doesn't support concurrent receivers"))
++        return
+     }
+     val __cancellation = kotlin.native.internal.ref.dereferenceExternalRCRef(cancellation) as SwiftJob
+     swiftCoroutine(__continuation, __exception, __cancellation) {
+         __self.next()
+     }
++}
++
++@ExportedBridge("_kotlin_swift_SwiftFlowIterator_takeValue")
++public fun SwiftFlowIterator_takeValue(self: kotlin.native.internal.NativePtr): kotlin.native.internal.NativePtr {
++    val iterator = kotlin.native.internal.ref.dereferenceExternalRCRef(self) as SwiftFlowIterator<*>
++    val value = iterator.takeSwiftValue()
++    return if (value == null) kotlin.native.internal.NativePtr.NULL
++    else kotlin.native.internal.ref.createRetainedExternalRCRef(value)
+ }
+ 
+ @ExportedBridge("_kotlin_swift_SwiftFlowIterator_init_allocate")

@@ -1,0 +1,81 @@
+--- a/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt
++++ b/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt
+@@ -6,6 +6,7 @@
+ package org.jetbrains.sir.printer.impl
+ 
+ import org.jetbrains.kotlin.sir.*
++import org.jetbrains.kotlin.sir.builder.buildExtension
+ import org.jetbrains.kotlin.sir.util.*
+ import org.jetbrains.kotlin.sir.util.returnType
+ import org.jetbrains.kotlin.utils.SmartPrinter
+@@ -207,9 +208,30 @@
+             .sortedWithIfNeeded(Comparators.stableSubscriptComparator)
+             .forEach { it.print() }
+         if (this@printChildren is SirModule) {
+-            this@with.filterIsInstance<SirExtension>()
++            val extensions = this@with.filterIsInstance<SirExtension>()
+                 .sortedWithIfNeeded(Comparators.stableExtensionComparator)
+-                .forEach { it.print() }
++            val penBoxConformances = extensions.filter {
++                it.extendedType.swiftName == "KotlinRuntimeSupport._KotlinExistentialPenBox" &&
++                        it.declarations.isEmpty() && it.constraints.isEmpty() &&
++                        it.attributes.isEmpty() && it.documentation == null &&
++                        it.visibility == SirVisibility.PACKAGE &&
++                        it.protocols.isNotEmpty()
++            }
++            if (penBoxConformances.size < 2) {
++                extensions.forEach { it.print() }
++            } else {
++                val first = penBoxConformances.first()
++                val combined = buildExtension {
++                    origin = first.origin
++                    visibility = first.visibility
++                    extendedType = first.extendedType
++                    protocols.addAll(penBoxConformances.flatMap { it.protocols }.distinct())
++                }.also { it.parent = first.parent }
++                extensions.forEach {
++                    if (it === first) combined.print()
++                    else if (it !in penBoxConformances) it.print()
++                }
++            }
+         }
+         filterIsInstanceAnd<SirEnum> { it.origin is SirOrigin.Namespace }
+             .sortedWithIfNeeded(Comparators.stableNamedComparator)
+@@ -272,6 +294,9 @@
+             printModifiers()
+             printOverride()
+         }
++        if (this is SirFunction && isAsync) {
++            print("nonisolated(nonsending) ")
++        }
+         printPreNameKeywords()
+         printName()
+         printPostNameKeywords()
+@@ -327,7 +352,7 @@
+             when (mode) {
+                 SirImport.Mode.Exported -> "@_exported "
+                 SirImport.Mode.Default -> ""
+-                SirImport.Mode.ImplementationOnly -> "@_implementationOnly "
++                SirImport.Mode.ImplementationOnly -> "internal "
+             }
+         )
+         print(spi.render(SirTypeVariance.INVARIANT).takeUnless { it.isBlank() }?.let { "$it " } ?: "")
+@@ -593,15 +618,15 @@
+                     "[${keyType.swiftRender(SirTypeVariance.INVARIANT)}: ${valueType.swiftRender(SirTypeVariance.INVARIANT)}]"
+ 
+                 is SirFunctionalType -> {
+-                    val parameters = (listOfNotNull(contextType) + parameterTypes).render()
++                    val parameters = (listOfNotNull(contextType) + parameterTypes).joinToString { (if (isAsync) "sending " else "") + it.swiftRender(SirTypeVariance.CONTRAVARIANT) }
+                     val async = " async".takeIf { isAsync } ?: ""
+                     val throws = when (errorType) {
+                         SirType.never -> ""
+                         SirType.any -> " throws"
+                         else -> " throws(${errorType.swiftRender(SirTypeVariance.COVARIANT)})"
+                     }
+-                    val returnType = returnType.swiftRender(SirTypeVariance.COVARIANT)
+-                    "($parameters)$async$throws -> $returnType"
++                    val returnType = (if (isAsync) "sending " else "") + returnType.swiftRender(SirTypeVariance.COVARIANT)
++                    (if (isAsync) "@Sendable @isolated(any) " else "") + "($parameters)$async$throws -> $returnType"
+                 }
+ 
+                 is SirTupleType ->

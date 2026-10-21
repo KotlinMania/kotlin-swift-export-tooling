@@ -1,0 +1,448 @@
+{
+  "version": "2.4.20-km.1",
+  "group": "io.github.kotlinmania",
+  "artifact": "swift-export-embeddable",
+  "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "official_base_sha256": "24c6159bcf0087ecf86bfc9bad01a975e192abcf75005b248292d85a139c2055",
+  "diagnostic_reference_sha256": "32f6c1ac5f137a204bdcaca192b0e59a9999f72d9c549ea0018b6d5fe77b797e",
+  "sources": [
+    {
+      "name": "TypeBridging.kt",
+      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
+      "baseline_sha256": "7ae7399f7359e7661695beec2239b21b13b277e7ebe67740fb65e2a3293246ef",
+      "candidate_sha256": "9ace3dc7fede02c03a94554c784abd4a161757c858b23cbd197b069018601a3d",
+      "patch": "patches/TypeBridging.kt.patch",
+      "patch_sha256": "f4dfc4405fd8ad11b19b40073853beec4d4f96ec9df281a81b097377f9ca2ce7",
+      "kind": "providers",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt"
+    },
+    {
+      "name": "SirBridgeProviderImpl.kt",
+      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirBridgeProviderImpl.kt",
+      "baseline_sha256": "5f3573d81732efd98290376520d8b37c4b668251fa9aa74a82940a19ca8115ea",
+      "candidate_sha256": "be7702ac46f20d52d5ea22c8f749aed75a231deffa206fd184831bd6f6524ac3",
+      "patch": "patches/SirBridgeProviderImpl.kt.patch",
+      "patch_sha256": "43d4d21cecfd0a84e3b200bb037dd18463f6ee70b6220780286ed09414b87486",
+      "kind": "providers",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirBridgeProviderImpl.kt"
+    },
+    {
+      "name": "SirAsSwiftSourcesPrinter.kt",
+      "path": "native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt",
+      "baseline_sha256": "0e51637ef237330a6d90eb3b13ae092ffd312a5869ac290d36b3690538a5c8dc",
+      "candidate_sha256": "de8fcbf3257fc252f0ae55fc0f63fcca88d5176d80dfe15c92c764377de37209",
+      "patch": "patches/SirAsSwiftSourcesPrinter.kt.patch",
+      "patch_sha256": "8bb17590608674a67b7b250222db9cf9b47b9b3dc493c6cd2c25279efc0ad887",
+      "kind": "printer",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt"
+    },
+    {
+      "name": "SirEnumFromKtSymbol.kt",
+      "path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirEnumFromKtSymbol.kt",
+      "baseline_sha256": "05c1a96eb208340637ea3366b6dee4fc465b59cd7c15ef822f7deb166d0803a8",
+      "candidate_sha256": "13fa738bb55a4ad7d8034809d01487d12fc3d219d76962dfafe4434389018778",
+      "patch": "patches/SirEnumFromKtSymbol.kt.patch",
+      "patch_sha256": "1ef18b4391f0355437611f3097955e21c960ce6898c30526fef29aa7c349e396",
+      "kind": "enum",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirEnumFromKtSymbol.kt"
+    },
+    {
+      "name": "AnnotationUtils.kt",
+      "path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/utils/AnnotationUtils.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/utils/AnnotationUtils.kt",
+      "baseline_sha256": "d419ac6b4120c6b50e4e708af54b905d6291390e93ca922b2ef7a07012e4f367",
+      "candidate_sha256": "d419ac6b4120c6b50e4e708af54b905d6291390e93ca922b2ef7a07012e4f367",
+      "kind": "enum-inline"
+    },
+    {
+      "name": "lazyWithSessions.kt",
+      "path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/extensions/lazyWithSessions.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/extensions/lazyWithSessions.kt",
+      "baseline_sha256": "64a5aeda80de818ece5da33c7cd5383b2d6e6f12966c16e53f92ccfb0f8d7575",
+      "candidate_sha256": "64a5aeda80de818ece5da33c7cd5383b2d6e6f12966c16e53f92ccfb0f8d7575",
+      "kind": "enum-inline"
+    },
+    {
+      "name": "KotlinCoroutineSupport.h",
+      "path": "native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.h",
+      "baseline_sha256": "62a8e7264901993a7ddd3921b455c027d160dec217904af273e84426bfb1ba50",
+      "candidate_sha256": "a7aefff3c55d161918fdab28b44563a73d61e52563bb3f9ec6e5575677eb1039",
+      "patch": "patches/KotlinCoroutineSupport.h.patch",
+      "patch_sha256": "1e89d71abdbd131075ff247d45df92ce4010840f9971abb8610b74f2c8ae7bc3",
+      "kind": "resource",
+      "archive_entry": "swift/KotlinCoroutineSupport.h"
+    },
+    {
+      "name": "KotlinCoroutineSupport.kt",
+      "path": "native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.kt",
+      "baseline_sha256": "cc30c61170e4a5fee58fcdda09539f30781cbada4c59389d99da8fed2a6f6d6f",
+      "candidate_sha256": "bd00ccad0f54f495f923c2920ccfb294457a306d6bb8c5bf849f844dd24f12fc",
+      "patch": "patches/KotlinCoroutineSupport.kt.patch",
+      "patch_sha256": "a3d9a3b37569c23dad716dba7fadfd71e4c5e49627c2da9ea7e0e027785c2e31",
+      "kind": "resource",
+      "archive_entry": "swift/KotlinCoroutineSupport.kt"
+    },
+    {
+      "name": "KotlinCoroutineSupport.swift",
+      "path": "native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.swift",
+      "baseline_sha256": "a7993337ed8c1debbd1b09e028258690cd17a9abc517ead32320e0417e7a3cee",
+      "candidate_sha256": "e85cb96e0af34c25faf8bfbc46e990f353b0ada50cebc0e90e1a14131f6cdd19",
+      "patch": "patches/KotlinCoroutineSupport.swift.patch",
+      "patch_sha256": "e161602f4bd420d9c1a4d5c3a245fad62841aa27b436618a35bdad53224217ef",
+      "kind": "resource",
+      "archive_entry": "swift/KotlinCoroutineSupport.swift"
+    },
+    {
+      "name": "KotlinRuntimeSupport.kt",
+      "path": "native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.kt",
+      "baseline_sha256": "d771d2df25034de4ff08ba8522af8833d82425cc8b3a78521720d2f1ecfa6b3e",
+      "candidate_sha256": "91a732acb826fc148034110195654defc40155c663d17e1b5b26223c1c039c24",
+      "patch": "patches/KotlinRuntimeSupport.kt.patch",
+      "patch_sha256": "e9e02dbd43f2569bb137829a00f1f51228765a0229eab1beb00686f32607ba0b",
+      "kind": "resource",
+      "archive_entry": "swift/KotlinRuntimeSupport.kt"
+    },
+    {
+      "name": "KotlinRuntimeSupport.swift",
+      "path": "native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.swift",
+      "baseline_sha256": "1a241c02c38f69a59af1778022b814098478e32e747ae8eb9fe922d32a619d65",
+      "candidate_sha256": "dbfc468afd0cbf3325e555ec2ded72f583e1fe4ac3fd690cf831ff8bf3668266",
+      "patch": "patches/KotlinRuntimeSupport.swift.patch",
+      "patch_sha256": "e9a565a88eda6b11b7df8f56f18321c4859f913b721871b02054ee9c356b2570",
+      "kind": "resource",
+      "archive_entry": "swift/KotlinRuntimeSupport.swift"
+    },
+    {
+      "name": "KotlinBase.h",
+      "path": "kotlin-native/runtime/src/objcExport/cpp/KotlinBase.h",
+      "baseline_sha256": "14390b9a40bcd8f924909692249ca95468cd3de36157be762371b1673dab86f3",
+      "candidate_sha256": "99186d1dd029a8ba5b66dae390a3aec0d6d0e5293eff641d85daab5e212723c3",
+      "patch": "patches/KotlinBase.h.patch",
+      "patch_sha256": "86295c6ad02441d080f8136dc4f5cb8dd0ed33f66aeff9caf271aa2d51f291fe",
+      "kind": "header",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/kotlin-native/runtime/src/objcExport/cpp/KotlinBase.h"
+    },
+    {
+      "name": "ContextualizedPrinter.kt",
+      "path": "native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/ContextualizedPrinter.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/ContextualizedPrinter.kt",
+      "baseline_sha256": "72c6b7f41c82a8e200d7f7e3dcb0daf4aa8b687e4a7edb3e188b43031551065a",
+      "candidate_sha256": "72c6b7f41c82a8e200d7f7e3dcb0daf4aa8b687e4a7edb3e188b43031551065a",
+      "kind": "printer-baseline-inline",
+      "reason": "Source interface reproduces official delegation member order in original baseline; candidate uses unchanged official bytecode interface, as in reviewed build."
+    }
+  ],
+  "tools": [
+    {
+      "name": "kotlin-build-tools-api-2.4.20-dev-7885.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-build-tools-api",
+      "version": "2.4.20-dev-7885",
+      "url": "https://redirector.kotlinlang.org/maven/bootstrap/org/jetbrains/kotlin/kotlin-build-tools-api/2.4.20-dev-7885/kotlin-build-tools-api-2.4.20-dev-7885.jar",
+      "sha256": "1d8c4c24f652fc86955a80b042328902e085037d0fa2efe025902235713f3248",
+      "scope": "bootstrap"
+    },
+    {
+      "name": "kotlin-compiler-embeddable-2.4.20-dev-7885.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-compiler-embeddable",
+      "version": "2.4.20-dev-7885",
+      "url": "https://redirector.kotlinlang.org/maven/bootstrap/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.4.20-dev-7885/kotlin-compiler-embeddable-2.4.20-dev-7885.jar",
+      "sha256": "63fc90ac7bfbe40b045e7bd10f9328ab7dd63bba22a0a8d8c40927ebddfbfb11",
+      "scope": "bootstrap"
+    },
+    {
+      "name": "kotlin-daemon-embeddable-2.4.20-dev-7885.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-daemon-embeddable",
+      "version": "2.4.20-dev-7885",
+      "url": "https://redirector.kotlinlang.org/maven/bootstrap/org/jetbrains/kotlin/kotlin-daemon-embeddable/2.4.20-dev-7885/kotlin-daemon-embeddable-2.4.20-dev-7885.jar",
+      "sha256": "f8b48df41dd00fd41995d7285814a79b3b2de3e860a1c9cdcfb73c2ed4047ba6",
+      "scope": "bootstrap"
+    },
+    {
+      "name": "kotlin-script-runtime-2.4.20-dev-7885.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-script-runtime",
+      "version": "2.4.20-dev-7885",
+      "url": "https://redirector.kotlinlang.org/maven/bootstrap/org/jetbrains/kotlin/kotlin-script-runtime/2.4.20-dev-7885/kotlin-script-runtime-2.4.20-dev-7885.jar",
+      "sha256": "2d99452277156c293e1b7218e20afb391602111e9a0e1972b1d3cd0830b3e0d9",
+      "scope": "bootstrap"
+    },
+    {
+      "name": "kotlin-stdlib-2.4.20-dev-7885.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-stdlib",
+      "version": "2.4.20-dev-7885",
+      "url": "https://redirector.kotlinlang.org/maven/bootstrap/org/jetbrains/kotlin/kotlin-stdlib/2.4.20-dev-7885/kotlin-stdlib-2.4.20-dev-7885.jar",
+      "sha256": "c614143095ee2ec9f3cf42aaa722119a8f8a41345da2057e3b8c3c9e9a016c05",
+      "scope": "bootstrap"
+    },
+    {
+      "name": "annotations-23.0.0.jar",
+      "group": "org.jetbrains",
+      "artifact": "annotations",
+      "version": "23.0.0",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/annotations/23.0.0/annotations-23.0.0.jar",
+      "sha256": "7b0f19724082cbfcbc66e5abea2b9bc92cf08a1ea11e191933ed43801eb3cd05",
+      "scope": "worker"
+    },
+    {
+      "name": "caffeine-2.9.3.jar",
+      "group": "com.github.ben-manes.caffeine",
+      "artifact": "caffeine",
+      "version": "2.9.3",
+      "url": "https://repo.maven.apache.org/maven2/com/github/ben-manes/caffeine/caffeine/2.9.3/caffeine-2.9.3.jar",
+      "sha256": "1e0a7bbef1dd791653143f3f05d0e489934bf5481e58a87c9e619cd46b68729b",
+      "scope": "worker"
+    },
+    {
+      "name": "checker-qual-3.43.0.jar",
+      "group": "org.checkerframework",
+      "artifact": "checker-qual",
+      "version": "3.43.0",
+      "url": "https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.43.0/checker-qual-3.43.0.jar",
+      "sha256": "3fbc2e98f05854c3df16df9abaa955b91b15b3ecac33623208ed6424640ef0f6",
+      "scope": "worker"
+    },
+    {
+      "name": "error_prone_annotations-2.28.0.jar",
+      "group": "com.google.errorprone",
+      "artifact": "error_prone_annotations",
+      "version": "2.28.0",
+      "url": "https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.28.0/error_prone_annotations-2.28.0.jar",
+      "sha256": "f3fc8a3a0a4020706a373b00e7f57c2512dd26d1f83d28c7d38768f8682b231e",
+      "scope": "worker"
+    },
+    {
+      "name": "kotlin-build-tools-api-2.4.20.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-build-tools-api",
+      "version": "2.4.20",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-build-tools-api/2.4.20/kotlin-build-tools-api-2.4.20.jar",
+      "sha256": "47a622dce7231b1916334b69a00bc1094adf6577e6492f9f06b3d9c2450fe459",
+      "scope": "worker"
+    },
+    {
+      "name": "kotlin-compiler-embeddable-2.4.20.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-compiler-embeddable",
+      "version": "2.4.20",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/2.4.20/kotlin-compiler-embeddable-2.4.20.jar",
+      "sha256": "cf97161430683fb9af96dc6a7017ffae1fe8737b80d12eee11f2fe3e76f8ded8",
+      "scope": "worker"
+    },
+    {
+      "name": "kotlin-daemon-embeddable-2.4.20.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-daemon-embeddable",
+      "version": "2.4.20",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-daemon-embeddable/2.4.20/kotlin-daemon-embeddable-2.4.20.jar",
+      "sha256": "eef72cf8f17e6d98d33e5b7c7e1cab31a1cf5fc34084dd5e563e7b1f3ef53435",
+      "scope": "worker"
+    },
+    {
+      "name": "kotlin-reflect-1.6.10.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-reflect",
+      "version": "1.6.10",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.6.10/kotlin-reflect-1.6.10.jar",
+      "sha256": "3277ac102ae17aad10a55abec75ff5696c8d109790396434b496e75087854203",
+      "scope": "worker"
+    },
+    {
+      "name": "kotlin-script-runtime-2.4.20.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-script-runtime",
+      "version": "2.4.20",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-script-runtime/2.4.20/kotlin-script-runtime-2.4.20.jar",
+      "sha256": "fc5a19df78be445d84e8352e0d01098a6a8181324aa50c6f7bf850338e81e1b4",
+      "scope": "worker"
+    },
+    {
+      "name": "kotlin-stdlib-2.4.20.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "kotlin-stdlib",
+      "version": "2.4.20",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.4.20/kotlin-stdlib-2.4.20.jar",
+      "sha256": "2226de463d309d4a5500a481320b3dea515a6981dcae1def531fbc158884e25f",
+      "scope": "worker"
+    },
+    {
+      "name": "kotlinx-coroutines-core-jvm-1.10.2-intellij-1.jar",
+      "group": "org.jetbrains.intellij.deps.kotlinx",
+      "artifact": "kotlinx-coroutines-core-jvm",
+      "version": "1.10.2-intellij-1",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/kotlinx/kotlinx-coroutines-core-jvm/1.10.2-intellij-1/kotlinx-coroutines-core-jvm-1.10.2-intellij-1.jar",
+      "sha256": "1e9b4b60644ca8dd5e9687ad096aee0028bd9d3a24afed3e38565b22ca726ee0",
+      "scope": "worker"
+    },
+    {
+      "name": "kotlinx-coroutines-core-jvm-1.8.0.jar",
+      "group": "org.jetbrains.kotlinx",
+      "artifact": "kotlinx-coroutines-core-jvm",
+      "version": "1.8.0",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.8.0/kotlinx-coroutines-core-jvm-1.8.0.jar",
+      "sha256": "9860906a1937490bf5f3b06d2f0e10ef451e65b95b269f22daf68a3d1f5065c5",
+      "scope": "worker"
+    },
+    {
+      "name": "kotlinx-serialization-core-jvm-1.7.3.jar",
+      "group": "org.jetbrains.kotlinx",
+      "artifact": "kotlinx-serialization-core-jvm",
+      "version": "1.7.3",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.7.3/kotlinx-serialization-core-jvm-1.7.3.jar",
+      "sha256": "f0adde45864144475385cf4aa7e0b7feb27f61fcf9472665ed98cc971b06b1eb",
+      "scope": "worker"
+    },
+    {
+      "name": "opentelemetry-api-1.41.0.jar",
+      "group": "io.opentelemetry",
+      "artifact": "opentelemetry-api",
+      "version": "1.41.0",
+      "url": "https://repo.maven.apache.org/maven2/io/opentelemetry/opentelemetry-api/1.41.0/opentelemetry-api-1.41.0.jar",
+      "sha256": "9336668f388de68a0a2c3e114154febd29db19a7644f27c4eba548f5de852258",
+      "scope": "worker"
+    },
+    {
+      "name": "opentelemetry-context-1.41.0.jar",
+      "group": "io.opentelemetry",
+      "artifact": "opentelemetry-context",
+      "version": "1.41.0",
+      "url": "https://repo.maven.apache.org/maven2/io/opentelemetry/opentelemetry-context/1.41.0/opentelemetry-context-1.41.0.jar",
+      "sha256": "5e3432a4464a432abfdab73be7142e516d25a84aa8426fce1192ffb0532faa35",
+      "scope": "worker"
+    },
+    {
+      "name": "swift-export-embeddable-2.4.20.jar",
+      "group": "org.jetbrains.kotlin",
+      "artifact": "swift-export-embeddable",
+      "version": "2.4.20",
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/swift-export-embeddable/2.4.20/swift-export-embeddable-2.4.20.jar",
+      "sha256": "24c6159bcf0087ecf86bfc9bad01a975e192abcf75005b248292d85a139c2055",
+      "scope": "worker"
+    }
+  ],
+  "selected_classes": {
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsContravariantBlock$inSwiftSources$1.class": {
+      "baseline_sha256": "86803cab1b328c2844f1d8b8f628dea6adf13669cb9c99791dc5c6293991cc18",
+      "candidate_sha256": "69eb6363ce0b928a567534c7da44ca0990d8cc783517ae7c53729e6dbac10d4c",
+      "kind": "providers",
+      "runtime_class_sha256": "6bb54decd6622e0789e732412092dfa39f0a0e804c70e725cad170cd831f3432"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsContravariantBlock.class": {
+      "baseline_sha256": "8be050ce30c288a22a564e91ce92cea38e5226682a945afef7742872489990cd",
+      "candidate_sha256": "dab54da98eed637d197c47bd0b79556c72ebb3b033869672aa8930138381c9b9",
+      "kind": "providers",
+      "runtime_class_sha256": "17456cab4805171b83025147025e92112676498bff85e2e0c26c4a03c9a6c6be"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsCovariantBlock$inKotlinSources$1.class": {
+      "baseline_sha256": "df9bba9c18efbb5916ed3438f185e8544b02bd3989228da6a54004d0c78bc577",
+      "candidate_sha256": "994386e54b1dd26386ef29878997de2c6d9e6f1796fdff15b81c5472dfee58dd",
+      "kind": "providers",
+      "runtime_class_sha256": "e0fa89b04ef61f48b6e7b3bbd9d5c5383f67bcc3bbcfc26f5cb0c8fc859bb2e8"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsCovariantBlock.class": {
+      "baseline_sha256": "cb7625a33a47e226230aa1add9e8c5bed2dd54ff4b0652e0d0121a3a93f8531b",
+      "candidate_sha256": "65ac574dc41be05ca044a749fe34b73db0921c64cf60f8a8424a744b5f775362",
+      "kind": "providers",
+      "runtime_class_sha256": "de3fe4ad91136116dbef3effbe5a7c3b90a3c627976b53fbb390a1b37a73576f"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSSet$inSwiftSources$1.class": {
+      "baseline_sha256": "bf4924601430e3bf18e3aaa8e805db830e55c2b000b39ed87c5abd92b6f6353f",
+      "candidate_sha256": "7f83620394e33756e4362b389edfc1574fd694775facc485ab9b4fe30155f562",
+      "kind": "providers",
+      "runtime_class_sha256": "3af9c2e37c0f7c8e4c8e8693544fbc1379ad18baabbb05df3f3f9ec8c849f275"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNothing$inKotlinSources$1.class": {
+      "baseline_sha256": "d6daf5d8fbaca79ba607a3638ff4732e7a5e6d6daf7e8c4ecd085c71cd468b6d",
+      "candidate_sha256": "f5167d47a47bf6de7d5e5fd8aa61b76c416a3bb4e10eb175c7480fe617a372fc",
+      "kind": "providers",
+      "runtime_class_sha256": "353e8f3d750f53b9992d121e1dbfc08b41506bb83da4e56d05cd8cae0bc2db4d"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNothing$inSwiftSources$1.class": {
+      "baseline_sha256": "477420043fe67d45c423f6cd999b6d9206d4d80c28ec025b6e15615dae66e6fd",
+      "candidate_sha256": "d3532f6383c8c84058bc68de817dafb393231f04920466adcca5274843dac342",
+      "kind": "providers",
+      "runtime_class_sha256": "6c9adfc66c99dbfcbde4764de2adca18b9028f68778b348b1c29ea4587fb33c5"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsOptionalNothing$inKotlinSources$1.class": {
+      "baseline_sha256": "3a716f22a731335bb24a3e596fb753a199b99927c23bfe45d7182defc052ec6e",
+      "candidate_sha256": "5e1564609bdf82da957a675c70621b80b460ef6cff48cbe04d8c63c841774993",
+      "kind": "providers",
+      "runtime_class_sha256": "7e9eca1a036ba5ed3ee31a671635072e468b09eaba34036aa974cc369108cfe7"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsOptionalNothing$inSwiftSources$1.class": {
+      "baseline_sha256": "01e28f3c0e2a5b8d41dbbf4a206676688755d460e5099e1b6323b80a1b238b5b",
+      "candidate_sha256": "47eb7281429d39baf4435a972ebf3dcf55e94166e4858e7df5c39072397ae32d",
+      "kind": "providers",
+      "runtime_class_sha256": "56f3f9c32b46e054e4e28ec163005b3bbdcbfb879bde5ba52651be144aecd051"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsOptionalWrapper$inSwiftSources$1.class": {
+      "baseline_sha256": "7025d6479dae9211388e0689d84580508be6370f94d6efcb86b7959f3a18708c",
+      "candidate_sha256": "56a341662c568ecd16f88f0705f468a907f06cd10a026482fa462538ae0049cc",
+      "kind": "providers",
+      "runtime_class_sha256": "4acf329a3389df1f1ce88c7730c96b0a0c3b1523c0602847c5ae85e2c0d019b4"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsVoid$inKotlinSources$1.class": {
+      "baseline_sha256": "4a7303051e928b0bfc0bcafb03029b59bf739f5a43a1301cfade42d9ac0a2012",
+      "candidate_sha256": "ec38ffd1ccf0008d2dc1fca45b86093deb71f47d090bae7ae4298ec627a4a3c1",
+      "kind": "providers",
+      "runtime_class_sha256": "666c6bf6b5aa078b744326157a4b1902790f09d281ca384990aa90d240c40889"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsVoid$inSwiftSources$1.class": {
+      "baseline_sha256": "8ab334cef5adb937bc4500c9ab01bbb30a911832c81478ae166db60783347fe1",
+      "candidate_sha256": "51a8f1da1bd1f33e311b1193747ed6c53302003522380150f6f34448b508f6e4",
+      "kind": "providers",
+      "runtime_class_sha256": "644375fb89d36045ee2cba3730d1e5d6a11a672358696a39dd17adb96ed62719"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/BridgeFunctionDescriptor.class": {
+      "baseline_sha256": "1cb629eaba94644789ff1ab407f5518ab5d463750947177471ab39f0d225cf87",
+      "candidate_sha256": "53c557c48089dab2bdef2083f26fbcd24cf92436b242851cb5dbdf634636f769",
+      "kind": "providers",
+      "runtime_class_sha256": "849c967f48093b2d1c6881cd11d8dbd8ad4cb03617cc76423896b7f84497bcaf"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/BridgeFunctionProxy.class": {
+      "baseline_sha256": "9ff4251b8a01e56681ff97a738a597d1e0503a1e7c3be4044bea748c61f942bc",
+      "candidate_sha256": "74e83a49825451656657003312481bc0b81840571cdced7cc81e1fd7ec4a7cd3",
+      "kind": "providers",
+      "runtime_class_sha256": "27f046b2de01f08cf46fd266ba35bf3654465fc32f74a2d57466f1e6a17b5480"
+    },
+    "org/jetbrains/sir/lightclasses/nodes/SirEnumFromKtSymbol.class": {
+      "baseline_sha256": "83c1dec037200c0d78a8ca33512fef94c304cd14d14fabf59f19fa7c7a026535",
+      "candidate_sha256": "821bdb4a45c9bee258014ae8643f453e1c2bba79feaf0771f6592fe4f5890ee3",
+      "kind": "enum",
+      "runtime_class_sha256": "4a3f999ba6c04bd46f5efafa812a34e78c6f99a8af224fa1fc1af39eb5ee5c25"
+    },
+    "org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.class": {
+      "baseline_sha256": "34e7e2f77f1a9def6ea8726d5fa00c3de57e16b08127c23f3062934a48c75804",
+      "candidate_sha256": "e19da936c557ec4eeb81dee4a138088087d7d56d77b546e647811c4b9e45c9e2",
+      "kind": "printer",
+      "runtime_class_sha256": "cd1b4d3533176d45e39aa847ee6fda5e65bd9992aaac15728019537901bc63e7"
+    }
+  },
+  "resources": {
+    "swift/KotlinCoroutineSupport.h": "a7aefff3c55d161918fdab28b44563a73d61e52563bb3f9ec6e5575677eb1039",
+    "swift/KotlinCoroutineSupport.kt": "bd00ccad0f54f495f923c2920ccfb294457a306d6bb8c5bf849f844dd24f12fc",
+    "swift/KotlinCoroutineSupport.swift": "e85cb96e0af34c25faf8bfbc46e990f353b0ada50cebc0e90e1a14131f6cdd19",
+    "swift/KotlinRuntimeSupport.kt": "91a732acb826fc148034110195654defc40155c663d17e1b5b26223c1c039c24",
+    "swift/KotlinRuntimeSupport.swift": "dbfc468afd0cbf3325e555ec2ded72f583e1fe4ac3fd690cf831ff8bf3668266"
+  },
+  "native_header": {
+    "relative_path": "konan/swift_export/kotlin_runtime/KotlinBase.h",
+    "baseline_sha256": "14390b9a40bcd8f924909692249ca95468cd3de36157be762371b1673dab86f3",
+    "candidate_sha256": "99186d1dd029a8ba5b66dae390a3aec0d6d0e5293eff641d85daab5e212723c3"
+  },
+  "native_identity": {
+    "bin/kotlinc-native": "5baa2f832ede18edd5933d8fe1f5327049e9a1b1ddb4a7d81998808b9cb460d8",
+    "konan/konan.properties": "f8a095afdc2b1fa052238c040562c254c36d7ce455a40a61cbf8065063ef4a4d",
+    "konan/lib/kotlin-native-compiler-embeddable.jar": "81aa0e438439fc7c1d591e05805af196dddc90965667165983c1a1ab3e6ba0fa"
+  },
+  "licenses": {
+    "LICENSE": "4eff664cbd5d3a1b1da4ce9ea5e0b499ea809bae1d389a7dfb58cdd895ab5a30",
+    "NOTICE": "13851a5f2ff480636bf4155bc101bb6d73743e53429955a8d2a3e42d40f25a09",
+    "licenses/upstream/COPYRIGHT.txt": "8f1a1700adb5490604c6094fb137bf73f6c28d3ee554b58f3ff8ef975a79672d",
+    "licenses/upstream/LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "licenses/upstream/NOTICE.txt": "0b09a83d3ef7795c7dec65e815866597c066c53898f2852a76599b8f5552941a"
+  }
+}
