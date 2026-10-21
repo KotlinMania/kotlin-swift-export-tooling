@@ -1,0 +1,71 @@
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+import java.security.MessageDigest
+def root = new File(System.getenv('PROCMACRO2_ENUM_DIAGNOSTIC_ROOT')).canonicalFile
+def cp = new JsonSlurper().parse(new File(root,'compiler-classpath.json'))
+gradle.beforeProject { p -> p.layout.buildDirectory.set(new File(root,'build')) }
+gradle.projectsEvaluated {
+  allprojects { p ->
+    p.tasks.matching { it.name == 'macosArm64DebugSwiftExport' }.configureEach { task ->
+      task.swiftExportClasspath.setFrom(cp.collect { new File(it.path) })
+      task.doFirst {
+        def actual=task.swiftExportClasspath.files.collect { f -> [path:f.absolutePath,sha256:MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString()] }
+        if(actual.size()!=cp.size() || actual.any { a -> !cp.any { it.path==a.path && it.sha256==a.sha256 } }) throw new GradleException('Exporter classpath integrity failure')
+        new File(root,'logs/actual-exporter-classpath.json').text=JsonOutput.prettyPrint(JsonOutput.toJson(actual))+'\n'
+        def artifacts=p.configurations.getByName('macosArm64CompileKlibraries').incoming.artifacts.artifacts.collect { a -> [component:a.id.componentIdentifier.displayName,path:a.file.absolutePath,sha256:a.file.isFile()?MessageDigest.getInstance('SHA-256').digest(a.file.bytes).encodeHex().toString():null] }
+        if(!artifacts.any { it.component.contains('io.github.kotlinmania:proc-macro-kotlin-macosarm64:0.1.4') }) throw new GradleException('Expected published ProcMacro macosArm64 0.1.4')
+        new File(root,'logs/actual-native-dependencies.json').text=JsonOutput.prettyPrint(JsonOutput.toJson(artifacts))+'\n'
+      }
+    }
+  }
+}
+
+gradle.projectsEvaluated {
+  gradle.rootProject.allprojects { p ->
+    p.tasks.configureEach { task ->
+      ['syntheticImportProjectRoot','swiftPMDependenciesCheckout'].each { name ->
+        if(task.hasProperty(name)) {
+          def prop=task.property(name)
+          if(prop.isPresent()) {
+            def old=prop.get().asFile.absolutePath
+            def prefix=p.rootProject.projectDir.absolutePath+'/.swiftpm-locks/'
+            if(old.startsWith(prefix)) prop.set(new File(root,'swiftpm-locks/'+old.substring(prefix.length())))
+          }
+        }
+      }
+    }
+  }
+}
+gradle.taskGraph.whenReady { graph ->
+  def rows=graph.allTasks.findAll { it.hasProperty('syntheticImportProjectRoot') }.collect { t ->
+    [task:t.path,root:t.syntheticImportProjectRoot.get().asFile.absolutePath,checkout:t.hasProperty('swiftPMDependenciesCheckout')?t.swiftPMDependenciesCheckout.get().asFile.absolutePath:null,originalActions:t.actions.collect {it.class.name}]
+  }
+  new File(root,'logs/swiftpm-paths.json').text=JsonOutput.prettyPrint(JsonOutput.toJson(rows))+'\n'
+}
+
+gradle.taskGraph.whenReady { graph ->
+  def outside=graph.allTasks.collectMany { t -> t.outputs.files.files.findAll { !it.canonicalPath.startsWith(root.canonicalPath+'/') }.collect { [task:t.path,path:it.absolutePath] } }
+  if(!outside.empty) throw new GradleException('Diagnostic output isolation failure: '+outside)
+}
+
+// Diagnostic configuration only: preserve the KGP producer action and every Werror gate.
+gradle.projectsEvaluated {
+  allprojects { p ->
+    p.tasks.matching { it.name == 'macosArm64DebugGenerateSPMPackage' || it.name == 'macosArm64DebugBuildSPMPackage' }.configureEach { task ->
+      def original = task.actions.toList()
+      def nativeAction = original.findAll { it.class.name == 'org.gradle.api.internal.project.taskfactory.StandardTaskAction' }
+      def policyAction = original.findAll { it.class.name == 'org.gradle.api.internal.AbstractTask$TaskActionWrapper' }
+      if(original.size()!=2 || nativeAction.size()!=1 || policyAction.size()!=1) throw new GradleException('Unexpected scoped policy actions: '+task.path+' '+original*.class*.name)
+      task.actions = nativeAction
+      def config = new File(root,'strict.xcconfig')
+      task.doFirst {
+        if(config.text != 'SWIFT_VERSION = 5\nSWIFT_TREAT_WARNINGS_AS_ERRORS = YES\nGCC_TREAT_WARNINGS_AS_ERRORS = YES\n') throw new GradleException('Mixed-mode dependency warning gate mismatch')
+        if(System.getenv('XCODE_XCCONFIG_FILE') != config.absolutePath) throw new GradleException('Wrong diagnostic xcconfig')
+      }
+      new File(root,'logs/policy-'+task.name+'.json').text=JsonOutput.prettyPrint(JsonOutput.toJson([task:task.path,original:original*.class*.name,retained: nativeAction*.class*.name,source_sha256:MessageDigest.getInstance('SHA-256').digest(new File(p.projectDir,'build.gradle.kts').bytes).encodeHex().toString(),diagnostic_dependency_mode:5,native_and_swift_werror:true,generated_source_rewrite:false]))+'\n'
+    }
+    p.tasks.matching { it.name.startsWith('compile') && it.hasProperty('compilerOptions') }.configureEach { task ->
+      task.doFirst { if(!task.compilerOptions.allWarningsAsErrors.get()) throw new GradleException('Native/Kotlin Werror missing: '+task.path) }
+    }
+  }
+}

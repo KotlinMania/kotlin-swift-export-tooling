@@ -1,0 +1,71 @@
+name: Reproducible Native Swift tooling
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6.0.1
+        with:
+          distribution: zulu
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v6.3.0
+        with:
+          gradle-version: '9.8.2'
+      - name: Print toolchain
+        run: |
+          java -version
+          swift --version
+          xcodebuild -version
+          gradle --version
+      - name: Build twice and verify exact source and class deltas
+        run: |
+          python3 scripts/build.py --output build/reproduction-a --cache build/inputs
+          python3 scripts/build.py --output build/reproduction-b --cache build/inputs
+          cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.1.jar build/reproduction-b/swift-export-embeddable-2.4.20-km.1.jar
+          python3 -m unittest discover -s tests -v
+          python3 scripts/distribution.py --build build/reproduction-a --output build/distribution-a
+          python3 scripts/distribution.py --build build/reproduction-b --output build/distribution-b
+          python3 scripts/check_distribution.py --distribution build/distribution-a --comparison build/distribution-b
+          python3 scripts/stage_resolution.py --distribution build/distribution-a --repository build/resolution-repository
+          gradle verifyWorkerPom --no-daemon --max-workers=2 --no-configuration-cache --console=plain
+      - name: Retrieve matching official Native SDK
+        run: python3 scripts/download_native_sdk.py --output build/official-sdk
+      - name: Use the actual packaged helper
+        run: |
+          mkdir build/helper
+          unzip -q build/distribution-a/swift-export-embeddable-2.4.20-km.1-native-sdk-helper.zip -d build/helper
+          shasum -a 256 build/helper/scripts/prepare_native_sdk.py > build/helper-source-before.txt
+          python3 build/helper/scripts/prepare_native_sdk.py --source build/official-sdk/kotlin-native-prebuilt-macos-aarch64-2.4.20 --destination build/native-sdk --receipt build/native-sdk-audit.json
+          shasum -a 256 -c build/helper-source-before.txt
+      - uses: actions/checkout@v7
+        with:
+          repository: KotlinMania/proc-macro2-kotlin
+          ref: 3d8718c2412be6aa99175ab88663edec8dbfa6db
+          path: build/consumer-source
+      - uses: actions/setup-java@v6.0.1
+        with:
+          distribution: zulu
+          java-version: '21'
+      - name: Real Native link and three unchanged Swift behaviors
+        run: python3 scripts/consumer.py --consumer build/consumer-source --output build/native-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/helper/scripts/prepare_native_sdk.py
+      - name: Preserve all proof and first failure
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reproducibility-native-swift-proof
+          path: |
+            build/reproduction-*/*.json
+            build/reproduction-*/*.log
+            build/distribution-a/
+            build/resolved-worker.json
+            build/native-sdk-audit.json
+            build/helper-source-before.txt
+            build/official-sdk/download.json
+            build/native-consumer/*.json
+            build/native-consumer/logs/
+          retention-days: 14
