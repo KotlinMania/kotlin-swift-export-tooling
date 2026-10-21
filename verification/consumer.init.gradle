@@ -67,5 +67,16 @@ gradle.projectsEvaluated {
     p.tasks.matching { it.name.startsWith('compile') && it.hasProperty('compilerOptions') }.configureEach { task ->
       task.doFirst { if(!task.compilerOptions.allWarningsAsErrors.get()) throw new GradleException('Native/Kotlin Werror missing: '+task.path) }
     }
+    p.tasks.matching { it.name == 'linkSwiftExportBinaryDebugStaticMacosArm64' }.configureEach { task ->
+      def cache = new File(root,'native-auto-cache')
+      def option = '-Xauto-cache-dir='+cache.absolutePath
+      task.toolOptions.freeCompilerArgs.add(option)
+      task.doFirst {
+        def configured = task.toolOptions.freeCompilerArgs.get().findAll { it.startsWith('-Xauto-cache-dir=') }
+        if(configured != [option]) throw new GradleException('Native auto-cache destination mismatch: '+configured)
+        cache.mkdirs()
+        new File(root,'logs/native-cache-policy.json').text=JsonOutput.prettyPrint(JsonOutput.toJson([task:task.path,option:option,cache_disabled:false,sdk_input_write_allowed:false]))+'\n'
+      }
+    }
   }
 }
