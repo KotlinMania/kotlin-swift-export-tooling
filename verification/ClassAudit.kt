@@ -35,7 +35,7 @@ internal fun runtimeClass(bytes: ByteArray): ByteArray {
                             check(value is String && value.startsWith("SMAP\n") && value.endsWith("*E\n"))
                             check(value.lineSequence().drop(1).first() in setOf(
                                 "TypeBridging.kt", "SirAsSwiftSourcesPrinter.kt", "SirEnumFromKtSymbol.kt", "SirBridgeProviderImpl.kt",
-                                "AsStringArray.kt", "AsStringArrayObjC.kt", "Types.kt", "SirCustomTypeTranslatorImpl.kt", "SirSession.kt",
+                                "AsStringArray.kt", "AsStringArrayObjC.kt", "Types.kt", "SirCustomTypeTranslatorImpl.kt", "SirSession.kt", "SirInitFromKtSymbol.kt", "lazyWithSessions.kt",
                             ))
                         }
                         override fun visitEnum(name: String?, descriptor: String?, value: String?) { error("Unexpected source debug array enum") }
