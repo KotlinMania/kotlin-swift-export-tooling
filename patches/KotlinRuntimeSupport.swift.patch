@@ -1,0 +1,26 @@
+--- a/native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.swift
++++ b/native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.swift
+@@ -1,4 +1,4 @@
+-@_implementationOnly import KotlinRuntimeSupportBridge
++internal import KotlinRuntimeSupportBridge
+ import KotlinRuntime
+ 
+ public struct KotlinError: Error & CustomStringConvertible {
+@@ -194,7 +194,7 @@
+         case 10: let v = KotlinBridgeable_Bool_unbox(ref);    KotlinBridgeable_disposeRef(ref); return v
+         case 11: let v = KotlinBridgeable_Float_unbox(ref);   KotlinBridgeable_disposeRef(ref); return v
+         case 12: let v = KotlinBridgeable_Double_unbox(ref);  KotlinBridgeable_disposeRef(ref); return v
+-        case 13: let v: [Any] = KotlinBridgeable_Array_unbox(ref) as! [Any]; KotlinBridgeable_disposeRef(ref); return v
++        case 13: let v: [Any] = KotlinBridgeable_Array_unbox(ref); KotlinBridgeable_disposeRef(ref); return v
+         case 14:
+             let v = Unmanaged<NSSet>.fromOpaque(KotlinBridgeable_Set_unbox(ref)).takeUnretainedValue() as! Set<AnyHashable>
+             KotlinBridgeable_disposeRef(ref); return v
+@@ -202,7 +202,7 @@
+             let v = Unmanaged<NSDictionary>.fromOpaque(KotlinBridgeable_Dictionary_unbox(ref)).takeUnretainedValue() as! [AnyHashable: Any]
+             KotlinBridgeable_disposeRef(ref); return v
+         default:
+-            return __createProtocolWrapper(externalRCRef: ref) as! any _KotlinBridgeable
++            return __createProtocolWrapper(externalRCRef: ref)!
+         }
+     }
+ }

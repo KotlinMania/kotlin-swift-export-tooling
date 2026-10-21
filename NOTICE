@@ -1,0 +1,19 @@
+KotlinMania Kotlin Native Swift export tooling
+Copyright 2026 KotlinMania contributors.
+
+This distribution contains modified Kotlin Swift Export tooling from
+JetBrains/kotlin, revision 890ac1d94fdb80eb85f0eeb5be5e4352df987b2f.
+Copyright JetBrains s.r.o. and Kotlin Programming Language contributors.
+The upstream Kotlin component is distributed under Apache License 2.0.
+Upstream copyright headers are preserved in source patches and rebuilt sources.
+
+KotlinMania modifications cover generated imports, conversions, enum handling,
+caller isolation, runtime lifecycle/cancellation and original error API support.
+The separate KotlinBase.h source patch corrects factory return ownership.
+The inputs manifest identifies all modified sources and exact upstream inputs.
+This is an independently maintained distribution, not an official JetBrains release.
+
+External compiler, coroutine and other worker dependencies retain their own
+licenses and notices and are resolved separately; their binaries are not bundled
+inside this archive. Kotlin/Native SDK binaries and Rust reference sources are
+not included in this distribution.

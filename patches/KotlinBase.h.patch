@@ -1,0 +1,20 @@
+--- a/kotlin-native/runtime/src/objcExport/cpp/KotlinBase.h
++++ b/kotlin-native/runtime/src/objcExport/cpp/KotlinBase.h
+@@ -35,7 +35,7 @@
+  *
+  * @see `+_createProtocolWrapperForExternalRCRef:`
+  */
+-+ (instancetype)_createClassWrapperForExternalRCRef:(void *)ref NS_SWIFT_NAME(__createClassWrapper(externalRCRef:));
+++ (instancetype)_createClassWrapperForExternalRCRef:(void *)ref NS_RETURNS_RETAINED NS_SWIFT_NAME(__createClassWrapper(externalRCRef:));
+ 
+ /**
+  * Creates and/or returns a `KotlinBase` instance that acts as an existential wrapper for the provided external Kotlin reference (`ref`).
+@@ -48,7 +48,7 @@
+  *
+  * @see `+_createClassWrapperForExternalRCRef:`
+  */
+-+ (KotlinBase *)_createProtocolWrapperForExternalRCRef:(void *)ref NS_SWIFT_NAME(__createProtocolWrapper(externalRCRef:));
+++ (KotlinBase *)_createProtocolWrapperForExternalRCRef:(void *)ref NS_RETURNS_RETAINED NS_SWIFT_NAME(__createProtocolWrapper(externalRCRef:));
+ 
+ + (instancetype)new NS_UNAVAILABLE;
+ - (instancetype)init NS_UNAVAILABLE;

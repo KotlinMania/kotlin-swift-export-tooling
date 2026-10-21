@@ -1,0 +1,13 @@
+--- a/native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.h
++++ b/native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.h
+@@ -13,6 +13,10 @@
+ 
+ void _kotlin_swift_SwiftFlowIterator_next(void * self, int32_t (^continuation)(bool, void * _Nullable ), int32_t (^exception)(void * _Nullable ), void * cancellation);
+ 
++void _kotlin_swift_SwiftFlowIterator_nextReady(void * self, int32_t (^continuation)(bool, void * _Nullable ), int32_t (^exception)(void * _Nullable ), void * cancellation);
++
++void * _Nullable _kotlin_swift_SwiftFlowIterator_takeValue(void * self);
++
+ void *_kotlin_swift_SwiftFlowIterator_init_allocate();
+ 
+ void _kotlin_swift_SwiftFlowIterator_init_initialize(void * __kt, void * flow);
