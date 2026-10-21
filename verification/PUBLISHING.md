@@ -39,8 +39,8 @@
    deliberately does not create or configure persistent access credentials.
 8. Hand the immutable Maven coordinate, six checksums, helper invocation, SDK
    audit and exact CI/retrieval receipts to the existing consumer owners. The
-   Array update requires Whoami's four unchanged real Swift cases with the
-   published bytes, followed by that repository's final release gates. The
+   ByteArray update requires Byteorder's three unchanged real Swift cases with
+   the published bytes, followed by that repository's final release gates. The
    ProcMacro2 three-case regression remains required by this tooling's CI.
    Neither consumer acceptance nor broader selection follows automatically
    from the producer fixtures.
