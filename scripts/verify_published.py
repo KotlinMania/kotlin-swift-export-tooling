@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import urllib.request
 from check_distribution import validate
+from signatures import verify as verify_signatures
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--output', type=Path, required=True)
@@ -27,5 +28,6 @@ for name, expected in lock['files'].items():
     signatures[name] = hashlib.sha256(signature).hexdigest()
 (args.output / 'distribution.json').write_text(json.dumps(lock, indent=2) + '\n')
 validate(args.output)
-(args.output / 'retrieval.json').write_text(json.dumps({'base_url': base, 'files': lock['files'], 'signatures_sha256': signatures, 'signature_crypto_verification': 'required separately using the recorded existing public key'}, indent=2) + '\n')
-print('Published files independently retrieved and byte-verified; detached signatures retained')
+verified = verify_signatures(args.output.resolve(), lock['files'], args.output / 'signature-verification')
+(args.output / 'retrieval.json').write_text(json.dumps({'base_url': base, 'files': lock['files'], 'signatures_sha256': signatures, 'signature_crypto_verification': verified}, indent=2) + '\n')
+print('Published files independently retrieved, byte-verified and cryptographically signature-verified')

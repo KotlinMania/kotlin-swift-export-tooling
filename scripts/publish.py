@@ -15,6 +15,7 @@ import uuid
 import xml.etree.ElementTree as ET
 import zipfile
 from check_distribution import validate
+from signatures import verify as verify_signatures
 
 REPO = Path(__file__).resolve().parents[1]
 PROJECT = 'KotlinMania/kotlin-swift-export-tooling'
@@ -59,6 +60,7 @@ def publish(args):
     # The existing key is parsed in memory by Gradle; no keyring or repository secrets are changed.
     with (args.output / 'signing.log').open('w') as log:
         subprocess.run(['gradle', 'signRelease', '--no-daemon', '--max-workers=2', '--no-configuration-cache', '--console=plain', '-PdistributionDirectory=' + str(args.distribution.resolve())], cwd=REPO, env=env, stdout=log, stderr=subprocess.STDOUT, check=True)
+    signatures = verify_signatures(args.distribution.resolve(), actual['files'], args.output / 'signature-verification')
     layout = args.output / 'staging/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.1'
     layout.mkdir(parents=True)
     for name in actual['files']:
@@ -79,7 +81,7 @@ def publish(args):
     request = urllib.request.Request('https://central.sonatype.com/api/v1/publisher/upload?' + urllib.parse.urlencode({'name': prefix, 'publishingType': 'AUTOMATIC'}), data=body, headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'multipart/form-data; boundary=' + boundary})
     with urllib.request.urlopen(request, timeout=120) as response:
         deployment = response.read().decode().strip()
-    receipt = {'deployment_id': deployment, 'source_head': head, 'required_ci': [run['html_url'] for run in runs], 'files': actual['files'], 'bundle_sha256': hashlib.sha256(bundle.read_bytes()).hexdigest(), 'status': 'uploaded_not_yet_independently_verified'}
+    receipt = {'deployment_id': deployment, 'source_head': head, 'required_ci': [run['html_url'] for run in runs], 'files': actual['files'], 'signatures': signatures, 'bundle_sha256': hashlib.sha256(bundle.read_bytes()).hexdigest(), 'status': 'uploaded_not_yet_independently_verified'}
     (args.output / 'upload.json').write_text(json.dumps(receipt, indent=2) + '\n')
     print('Central upload accepted; deployment ' + deployment + '. Verify status and independently retrieve artifacts before adoption.')
 
