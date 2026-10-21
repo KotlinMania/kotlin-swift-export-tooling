@@ -12,11 +12,15 @@ p.add_argument('--sdk',type=Path,required=True)
 p.add_argument('--sdk-audit',type=Path,required=True)
 p.add_argument('--sdk-download-audit',type=Path,required=True)
 p.add_argument('--helper',type=Path,required=True)
+p.add_argument('--gradle-cache-seed',type=Path,help='Optional closed binary cache; copied into the new owned output')
+p.add_argument('--konan-cache-seed',type=Path,help='Optional closed Native dependency cache; copied into the new owned output')
 opt=p.parse_args()
 repo=opt.consumer.resolve();b=opt.output.resolve();sdk=opt.sdk.resolve()
 assert not b.exists(),'New consumer output directory required'
 b.mkdir(parents=True)
 for name in ['logs','tmp','process-home','products','idea-system','idea-config','swift-cache/clang','swift-cache/module','harness/Tests/SwiftTestHarnessTests']:(b/name).mkdir(parents=True,exist_ok=True)
+for seed,name in [(opt.gradle_cache_seed,'gradle-home'),(opt.konan_cache_seed,'konan-data')]:
+ if seed:subprocess.run(['cp','-cRL',str(seed.resolve()),str(b/name)],check=True)
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def save(name,value):(b/name).write_text(json.dumps(value,indent=2)+'\n')
 lock=json.loads((TOOLING/'inputs.lock.json').read_text())
@@ -55,7 +59,11 @@ def verify():
  for name in ['source-pins.json','producer-inputs.json','sdk-pins.json']:
   assert all(sha(p)==h for p,h in json.loads((b/name).read_text()).items()),name+' input changed'
  for row in cp:assert sha(row['path'])==row['sha256']
- assert {str(sdk/name):h for name,h in helper.inventory(sdk).items()}==sdkpins,'SDK inventory set or hashes changed'
+ actual_sdk={str(sdk/name):h for name,h in helper.inventory(sdk).items()}
+ if actual_sdk!=sdkpins:
+  save('sdk-observed-after.json',actual_sdk)
+  save('sdk-inventory-delta.json',{'added':{p:actual_sdk[p] for p in sorted(set(actual_sdk)-set(sdkpins))},'removed':{p:sdkpins[p] for p in sorted(set(sdkpins)-set(actual_sdk))},'changed':{p:{'before':sdkpins[p],'after':actual_sdk[p]} for p in sdkpins if p in actual_sdk and sdkpins[p]!=actual_sdk[p]}})
+ assert actual_sdk==sdkpins,'SDK inventory set or hashes changed'
  if (b/'recipe-pins.json').exists():
   assert all(sha(path)==h for path,h in json.loads((b/'recipe-pins.json').read_text()).items()),'Frozen recipe changed'
  assert sha(b/'harness/Tests/SwiftTestHarnessTests/ProcMacro2ExportTests.swift')==sha(repo/'swift-test-harness/Tests/SwiftTestHarnessTests/ProcMacro2ExportTests.swift')

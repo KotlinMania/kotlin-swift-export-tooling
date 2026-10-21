@@ -42,6 +42,21 @@ python3 build/swift-tooling-helper/scripts/prepare_native_sdk.py \
   -Pkotlin.native.home="$PWD/build/native-sdk/kotlin-native-2.4.20-km.1"
 ```
 
+Keep Native automatic dependency caches outside that SDK copy. The compiler's
+supported cache-output option preserves caching and warning policy:
+
+```kotlin
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink>().configureEach {
+    val cache = layout.buildDirectory.dir("native-auto-cache/$name")
+    toolOptions.freeCompilerArgs.add(cache.map { "-Xauto-cache-dir=${it.asFile.absolutePath}" })
+}
+```
+
+Without this setting, a cold SDK can receive generated dependency-cache archives
+under `klib/cache` during linking. Those are build outputs, not changes made by
+the header helper. Release verification requires the entire prepared SDK input
+inventory to remain unchanged during the consumer build and tests.
+
 The source is a trusted matching official SDK, read-only. The helper pins the original header, compiler launcher, compiler component and configuration; inventories every input; rejects symlinks, existing destinations, nested/overlapping trees and unrecognized compiler/header identities; copies the SDK; applies exactly the header patch; verifies every other file and the unchanged source tree; and writes the complete audit. It never overwrites installed compiler files. The receipt proves copy integrity, not an independent signature verification of an arbitrary user-supplied SDK.
 
 Original header SHA256: `14390b9a40bcd8f924909692249ca95468cd3de36157be762371b1673dab86f3`.
