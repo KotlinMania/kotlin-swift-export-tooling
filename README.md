@@ -2,13 +2,15 @@
 
 Version-pinned repairs for Kotlin/Native's direct Swift export pipeline. This is host compiler tooling, not a Kotlin Multiplatform application dependency. Kotlin/Native still produces native KLIBs and ARM64 machine code; Swift compiles and calls the generated bindings directly.
 
-The release coordinate is `io.github.kotlinmania:swift-export-embeddable:2.4.20-km.2`. Release availability is established by the tagged release and independently retrieved Maven artifacts, not by a locally built file. The source branch and earlier diagnostic receipts alone are not publication evidence.
+The release coordinate is `io.github.kotlinmania:swift-export-embeddable:2.4.20-km.3`. Release availability is established by the tagged release and independently retrieved Maven artifacts, not by a locally built file. The source branch and earlier diagnostic receipts alone are not publication evidence.
+
+Version `2.4.20-km.3` adds one-step typed `ByteArray` constructors with unchanged public Swift signatures. Its isolated Debug fixture exercises Native compilation/linking, six Swift behavior cases and seven C boundary processes, including checked bounds and receiver rejection. Portable builds on JDK 21 and JDK 25 produce identical components. Other primitive-array constructors are unchanged. Every product library needs its own actual published-input behavior checks; producer fixture results are not fleet acceptance.
 
 ## Compatibility
 
 This version targets **KGP 2.4.20 and Kotlin/Native 2.4.20**, initially on macOS ARM64 with Swift 6.3.3 and macOS 15 deployment. Generated dependency sources compile in Swift **5 language mode**; authored consumer tests compile in Swift **6 language mode**. Both retain warnings as errors, as does the generated Native Kotlin bridge. Swift tools-version 5.9 is a manifest/API minimum and package default, not an older compiler installation.
 
-The original mutable `KotlinError.wrapped` property, reference identity, copy semantics and lazy message behavior remain. No unchecked Sendable conformance or warning suppression is added. This mixed-language configuration is not proof that arbitrary mutable Kotlin objects are safe to transfer between actors. Invariant non-null String arrays have a concrete typed view with checked Native storage, including supported nested collection and synchronous callback conversions. Arrays of other element types, general reverse asynchronous callbacks, recursive generic bounds, public Throwable cause/subtype round trips and old precompiled-client ABI remain outside the demonstrated acceptance. Initial production selection is limited to independently validated ProcMacro2; other libraries require their own actual tests.
+The original mutable `KotlinError.wrapped` property, reference identity, copy semantics and lazy message behavior remain. No unchecked Sendable conformance or warning suppression is added. This mixed-language configuration is not proof that arbitrary mutable Kotlin objects are safe to transfer between actors. Invariant non-null String arrays have a concrete typed view with checked Native storage, including supported nested collection and synchronous callback conversions. Arrays of other element types, general reverse asynchronous callbacks, recursive generic bounds, public Throwable cause/subtype round trips and old precompiled-client ABI remain outside the demonstrated acceptance. Production selection requires independent exact-head validation in each consumer; fixture passes do not establish another library’s acceptance.
 
 ## Installation
 
@@ -18,7 +20,7 @@ Use the published version only on the exporter tool configuration. Keep KGP, Nat
 configurations.configureEach {
     if (name == "swiftExportClasspath") {
         dependencies.add(project.dependencies.create(
-            "io.github.kotlinmania:swift-export-embeddable:2.4.20-km.2"
+            "io.github.kotlinmania:swift-export-embeddable:2.4.20-km.3"
         ))
     }
 }
@@ -36,10 +38,10 @@ The exporter alone is insufficient: the matching Native SDK needs the reviewed r
 mkdir -p build/native-sdk
 python3 build/swift-tooling-helper/scripts/prepare_native_sdk.py \
   --source "$OFFICIAL_KOTLIN_NATIVE_2_4_20_HOME" \
-  --destination "$PWD/build/native-sdk/kotlin-native-2.4.20-km.2" \
+  --destination "$PWD/build/native-sdk/kotlin-native-2.4.20-km.3" \
   --receipt "$PWD/build/native-sdk/input-audit.json"
 ./gradlew embedSwiftExportForXcode \
-  -Pkotlin.native.home="$PWD/build/native-sdk/kotlin-native-2.4.20-km.2"
+  -Pkotlin.native.home="$PWD/build/native-sdk/kotlin-native-2.4.20-km.3"
 ```
 
 Keep Native automatic dependency caches outside that SDK copy. The compiler's
@@ -69,13 +71,13 @@ Corrected header SHA256: `99186d1dd029a8ba5b66dae390a3aec0d6d0e5293eff641d85daab
 ```sh
 python3 scripts/build.py --output build/reproduction-a --cache build/inputs
 python3 scripts/build.py --output build/reproduction-b --cache build/inputs
-cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.2.jar \
-    build/reproduction-b/swift-export-embeddable-2.4.20-km.2.jar
+cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.3.jar \
+    build/reproduction-b/swift-export-embeddable-2.4.20-km.3.jar
 ```
 
 The build recompiles unmodified baselines and requires exact member descriptors/access flags and complete normalized instruction graphs. It rebuilds the selected producer classes from authoritative source, keeps unselected official classes unchanged, and checks all non-debug class attributes against reviewed fingerprints. Only source/line/local-variable debug maps and the exact validated invisible Kotlin SourceDebugExtension SMAP annotation are excluded from that comparison; annotations, Kotlin metadata, frames and executable instructions remain. Fail-closed auditor tests reject malformed/duplicate debug annotations and preserve actual field changes. Complete-source debug maps can differ from the earlier incremental diagnostic artifact; that raw mismatch is recorded rather than relabeled as byte equality.
 
-The archive has deterministic entry ordering, permissions and timestamps. The Array extension builds over the immutable verified km.1 component, audits all 159 unchanged-source baseline classes, and locks all 30 selected replacement/addition class fingerprints and coherent runtime resources. Previous source patches and worker inputs remain pinned. License/provenance additions and metadata replacement are explicit. Two clean build hashes must match. Native and actual Swift behavior gates are separate from these host-tool checks and must execute nonzero named cases. Package manifest compilation and SwiftPM's generated runner are classified separately from authored consumer and dependency frontends.
+The archive has deterministic entry ordering, permissions and timestamps. The km.2 Array layer builds over the immutable verified km.1 component, with its 159-class baseline and 30 selected class fingerprints preserved. The km.3 constructor layer builds over immutable km.2, verifies eight complete baseline constructor classes, locks eleven selected classes including five additions, checks every retained/new member reference, and preserves every excluded parent entry byte-for-byte. Previous source patches and worker inputs remain pinned. License/provenance additions and metadata replacement are explicit. Two clean build hashes must match. Native and actual Swift behavior gates are separate from these host-tool checks and must execute nonzero named cases. Package manifest compilation and SwiftPM's generated runner are classified separately from authored consumer and dependency frontends.
 
 ## Licensing and maintenance
 

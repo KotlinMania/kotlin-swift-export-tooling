@@ -1,5 +1,5 @@
 {
-  "version": "2.4.20-km.2",
+  "version": "2.4.20-km.3",
   "group": "io.github.kotlinmania",
   "artifact": "swift-export-embeddable",
   "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
@@ -168,6 +168,16 @@
       "patch_sha256": "b68a27c19cbe5353b46ac7b18f3aa101d648a69adc7c5010e15d5a59abf25477",
       "kind": "resource",
       "archive_entry": "swift/KotlinRuntimeSupport.h"
+    },
+    {
+      "name": "SirInitFromKtSymbol.kt",
+      "path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirInitFromKtSymbol.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirInitFromKtSymbol.kt",
+      "baseline_sha256": "be9085f28f4f359cd41526090b0692d48497f6596115fb91a4fd44bf52f70cff",
+      "candidate_sha256": "396514b9af870f94309a28c6055850dc01b9b1ea9e89b54df165f8f194f1c938",
+      "patch": "producer/byte-arrays/SirInitFromKtSymbol.kt.patch",
+      "patch_sha256": "51e491c84dbac70d9bdf77e79ba61c194f5b31c84cc591758ce7733bcc18e923",
+      "kind": "bytearray-init"
     }
   ],
   "tools": [
@@ -368,6 +378,15 @@
       "sha256": "e1b871c93dd9556fb7235cd05f70b3c2bc7d32f2cb1b69f1d9161918fd088f3a",
       "name": "swift-export-embeddable-2.4.20-km.1.jar",
       "scope": "base"
+    },
+    {
+      "name": "swift-export-embeddable-2.4.20-km.2.jar",
+      "artifact": "swift-export-embeddable",
+      "group": "io.github.kotlinmania",
+      "version": "2.4.20-km.2",
+      "scope": "bytearray-base",
+      "sha256": "5a0f81f2628c407f1551e35dc6e58f65b10cd09406f9f19d4afa6f672ec5ccf4",
+      "url": "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.2/swift-export-embeddable-2.4.20-km.2.jar"
     }
   ],
   "selected_classes": {
@@ -680,5 +699,7 @@
     "licenses/upstream/NOTICE.txt": "0b09a83d3ef7795c7dec65e815866597c066c53898f2852a76599b8f5552941a"
   },
   "array_repair": "arrays.lock.json",
-  "array_repair_sha256": "8c0dbc3a2c9db969cf9bc325a4b4a45a72212f6a954c5330ffbb6226974f5701"
+  "array_repair_sha256": "8c0dbc3a2c9db969cf9bc325a4b4a45a72212f6a954c5330ffbb6226974f5701",
+  "bytearray_repair": "producer/byte-arrays/repair.lock.json",
+  "bytearray_repair_sha256": "79a08b70f8dc79eb9bc5243397bff4d401513eea0833d3fba1306b1b7fcbcaf6"
 }

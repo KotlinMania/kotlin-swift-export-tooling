@@ -50,6 +50,9 @@ def run(arguments, log, env=None):
 
 def build(output, cache, seeds):
     lock = json.loads((REPO / 'inputs.lock.json').read_text())
+    if 'bytearray_repair' in lock:
+        from build_bytearrays import build_bytearrays
+        return build_bytearrays(output, cache, seeds, lock)
     if 'array_repair' in lock:
         from build_arrays import build_arrays
         return build_arrays(output, cache, seeds, lock)
