@@ -123,8 +123,8 @@
     },
     {
       "name": "SirCustomTypeTranslatorImpl.kt",
-      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirCustomTypeTranslatorImpl.kt",
-      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirCustomTypeTranslatorImpl.kt",
+      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/SirCustomTypeTranslatorImpl.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/SirCustomTypeTranslatorImpl.kt",
       "baseline_sha256": "faf1560cab962cfefacb69d005d92404f000cde2a895fabe5c4490daf36cebe2",
       "candidate_sha256": "bb28c740377368f301837e15cdd7fa71b929ceb0fe17b14b08f0000b9ed07be1",
       "patch": "patches/arrays/SirCustomTypeTranslatorImpl.kt.patch",
@@ -680,5 +680,5 @@
     "licenses/upstream/NOTICE.txt": "0b09a83d3ef7795c7dec65e815866597c066c53898f2852a76599b8f5552941a"
   },
   "array_repair": "arrays.lock.json",
-  "array_repair_sha256": "f52509d9eb6375d19574fc0207424696274a0bbcfd7ca92b3b590c616f9430d0"
+  "array_repair_sha256": "8c0dbc3a2c9db969cf9bc325a4b4a45a72212f6a954c5330ffbb6226974f5701"
 }

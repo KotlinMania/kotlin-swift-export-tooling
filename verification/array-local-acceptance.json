@@ -18,5 +18,15 @@
   "dependency_swift_mode": 5,
   "authored_swift_mode": 6,
   "native_and_swift_warnings_as_errors": true,
-  "precompiled_client_compatibility_claimed": false
+  "precompiled_client_compatibility_claimed": false,
+  "source_url_metadata_correction": {
+    "main_component_sha256": "5a0f81f2628c407f1551e35dc6e58f65b10cd09406f9f19d4afa6f672ec5ccf4",
+    "only_changed_jar_entries": [
+      "META-INF/kotlinmania/arrays.lock.json",
+      "META-INF/kotlinmania/inputs.lock.json"
+    ],
+    "reproducibility_receipt_sha256": "96108139ce9c89a9261aeaed82dc3195600b7f875aacbe84dbe8cfe0e9d81fda",
+    "executable_classes_and_runtime_resources_identical": true,
+    "exact_corrected_component_consumer_ci_required": true
+  }
 }

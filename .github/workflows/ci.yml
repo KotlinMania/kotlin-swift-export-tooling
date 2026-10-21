@@ -61,8 +61,8 @@ jobs:
         with:
           name: reproducibility-native-swift-proof
           path: |
-            build/reproduction-*/*.json
-            build/reproduction-*/*.log
+            build/reproduction-*/**/*.json
+            build/reproduction-*/**/*.log
             build/distribution-a/
             build/resolved-worker.json
             build/native-sdk-audit.json

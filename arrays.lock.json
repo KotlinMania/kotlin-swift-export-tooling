@@ -31,8 +31,8 @@
     },
     {
       "name": "SirCustomTypeTranslatorImpl.kt",
-      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirCustomTypeTranslatorImpl.kt",
-      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirCustomTypeTranslatorImpl.kt",
+      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/SirCustomTypeTranslatorImpl.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/SirCustomTypeTranslatorImpl.kt",
       "baseline_sha256": "faf1560cab962cfefacb69d005d92404f000cde2a895fabe5c4490daf36cebe2",
       "candidate_sha256": "bb28c740377368f301837e15cdd7fa71b929ceb0fe17b14b08f0000b9ed07be1",
       "patch": "patches/arrays/SirCustomTypeTranslatorImpl.kt.patch",
