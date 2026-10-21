@@ -7,6 +7,27 @@ private final class InitializationProbe {
     let value: Int8 = 7
 }
 
+private final class WeakByteArray {
+    weak var value: ExportedKotlinPackages.kotlin.ByteArray?
+
+    init(_ value: ExportedKotlinPackages.kotlin.ByteArray) {
+        self.value = value
+    }
+}
+
+@inline(never)
+private func exerciseRetainedArray() -> WeakByteArray {
+    var value: ExportedKotlinPackages.kotlin.ByteArray? = ExportedKotlinPackages.kotlin.ByteArray(size: 1)
+    let weak = WeakByteArray(value!)
+    observeBytes(value: value!)
+    collectByteArrayGarbage()
+    #expect(observedBytesAlive())
+    value?[0] = 19
+    #expect(value?[0] == 19)
+    value = nil
+    return weak
+}
+
 @Suite(.serialized)
 struct ByteArrayTests {
     @Test func sizeConstructorInitializesZerosAndEmptyArray() {
@@ -45,17 +66,9 @@ struct ByteArrayTests {
     }
 
     @Test func retainedSwiftArrayKeepsNativeRootAndThenReleasesIt() {
-        var value: ExportedKotlinPackages.kotlin.ByteArray?
-        autoreleasepool {
-            value = ExportedKotlinPackages.kotlin.ByteArray(size: 1)
-            observeBytes(value: value!)
-        }
-        collectByteArrayGarbage()
-        #expect(observedBytesAlive())
-        value?[0] = 19
-        #expect(value?[0] == 19)
-        value = nil
+        let weak = autoreleasepool { exerciseRetainedArray() }
         for _ in 0..<5 { autoreleasepool { collectByteArrayGarbage() } }
+        #expect(weak.value == nil)
         #expect(!observedBytesAlive())
     }
 
