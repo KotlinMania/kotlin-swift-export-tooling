@@ -21,7 +21,9 @@ def main():
     for name in ['output', 'distribution', 'cache', 'sdk', 'sdk-audit', 'gradle-cache-seed', 'konan-cache-seed', 'gradle']:
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--configuration', choices=['Debug', 'Release'], required=True)
-    parser.add_argument('--candidate-audit', type=Path, required=True)
+    parser.add_argument('--candidate-audit', type=Path)
+    parser.add_argument('--sdk-download-audit', type=Path)
+    parser.add_argument('--helper', type=Path)
     options = parser.parse_args()
     root = options.output.resolve()
     assert not root.exists(), 'New output required'
@@ -32,21 +34,27 @@ def main():
     lock = json.loads((REPO / 'inputs.lock.json').read_text())
     release = json.loads((REPO / 'verification/release-artifacts.json').read_text())
     parent = options.distribution.resolve() / (lock['artifact'] + '-' + lock['version'] + '.jar')
-    assert digest(parent) == release['main_component_sha256']
-    audit_path = options.candidate_audit.resolve()
-    candidate_audit = json.loads(audit_path.read_text())
-    assert candidate_audit['accepted_for_isolated_fixture'] and candidate_audit['all_unselected_parent_entries_byte_identical']
-    assert candidate_audit['baseline_classes_fullflags_instructions_attributes_equal'] == 8
-    assert not candidate_audit['removed_parent_entries']
-    assert digest(audit_path.parent / 'reference-closure.json') == candidate_audit['reference_closure_sha256']
-    assert json.loads((audit_path.parent / 'reference-closure.json').read_text())['accepted']
-    component = Path(candidate_audit['jar'])
-    assert digest(component) == candidate_audit['sha256']
+    distribution_receipt = options.distribution.resolve() / 'distribution.json'
+    assert digest(parent) == json.loads(distribution_receipt.read_text())['main_component_sha256']
+    audit_path = options.candidate_audit.resolve() if options.candidate_audit else None
+    if audit_path:
+        assert digest(parent) == release['main_component_sha256']
+        candidate_audit = json.loads(audit_path.read_text())
+        assert candidate_audit['accepted_for_isolated_fixture'] and candidate_audit['all_unselected_parent_entries_byte_identical']
+        assert candidate_audit['baseline_classes_fullflags_instructions_attributes_equal'] == 8
+        assert not candidate_audit['removed_parent_entries']
+        assert digest(audit_path.parent / 'reference-closure.json') == candidate_audit['reference_closure_sha256']
+        assert json.loads((audit_path.parent / 'reference-closure.json').read_text())['accepted']
+        component = Path(candidate_audit['jar'])
+        assert digest(component) == candidate_audit['sha256']
+    else:
+        assert options.sdk_download_audit and options.helper, 'Release validation requires packaged helper provenance'
+        component = parent
     tools = []
     for row in lock['tools']:
         if row['scope'] == 'worker':
             path = component if row['artifact'] == 'swift-export-embeddable' else options.cache.resolve() / row['name']
-            expected = candidate_audit['sha256'] if path == component else row['sha256']
+            expected = digest(component) if path == component else row['sha256']
             assert digest(path) == expected
             tools.append({'path': str(path), 'sha256': expected})
     assert len(tools) == 16
@@ -84,7 +92,13 @@ let package = Package(name: "ByteArrayConstructor", platforms: [.macOS(.v15)], d
     assert audit['unchanged_native_binaries'] and not audit['installed_source_modified']
     assert all(audit['source_files'][key] == value for key, value in lock['native_identity'].items())
     assert audit['source_files'][lock['native_header']['relative_path']] == lock['native_header']['baseline_sha256']
-    fixed = [audit_path, audit_path.parent / 'reference-closure.json', parent, component, Path(__file__), REPO / 'inputs.lock.json', REPO / 'verification/release-artifacts.json', init_source, REPO / 'scripts/prepare_native_sdk.py', options.sdk_audit.resolve(), root / 'compiler-classpath.json', root / 'strict.xcconfig', root / 'isolation.init.gradle']
+    fixed = [parent, distribution_receipt, component, Path(__file__), REPO / 'inputs.lock.json', REPO / 'verification/release-artifacts.json', init_source, REPO / 'scripts/prepare_native_sdk.py', options.sdk_audit.resolve(), root / 'compiler-classpath.json', root / 'strict.xcconfig', root / 'isolation.init.gradle']
+    if audit_path:
+        fixed += [audit_path, audit_path.parent / 'reference-closure.json']
+    if options.sdk_download_audit:
+        fixed.append(options.sdk_download_audit.resolve())
+    if options.helper:
+        fixed.append(options.helper.resolve())
     fixed += [path for base in [fixture, root / 'fixture', harness] for path in base.rglob('*') if path.is_file()]
     pins = {str(path): digest(path) for path in fixed}
     save('input-pins.json', pins)
@@ -168,7 +182,7 @@ let package = Package(name: "ByteArrayConstructor", platforms: [.macOS(.v15)], d
         boundary_results[case] = {'exit': process.returncode, 'log_sha256': digest(boundary / (case + '.log'))}
     verify()
     assert emitted_inventory() == emitted, 'Generated inventory changed'
-    save('verified-result.json', {'accepted': True, 'configuration': options.configuration, 'tests': counts, 'frontends': frontends, 'manifest_frontends': manifest_frontends, 'native_boundary': boundary_results, 'native_archive_sha256': digest(archive), 'component_sha256': digest(component), 'sdk_files_unchanged': len(expected_sdk), 'candidate_audit_sha256': digest(audit_path), 'generic_result_fidelity': 'not claimed', 'swift_error_catch_or_actor_safety': 'not claimed'})
+    save('verified-result.json', {'accepted': True, 'configuration': options.configuration, 'tests': counts, 'frontends': frontends, 'manifest_frontends': manifest_frontends, 'native_boundary': boundary_results, 'native_archive_sha256': digest(archive), 'component_sha256': digest(component), 'sdk_files_unchanged': len(expected_sdk), 'candidate_audit_sha256': digest(audit_path) if audit_path else None, 'generic_result_fidelity': 'not claimed', 'swift_error_catch_or_actor_safety': 'not claimed'})
     print('PASS six real ByteArray constructor behaviors in ' + options.configuration, flush=True)
 
 

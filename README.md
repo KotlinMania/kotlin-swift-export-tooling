@@ -4,6 +4,8 @@ Version-pinned repairs for Kotlin/Native's direct Swift export pipeline. This is
 
 The release coordinate is `io.github.kotlinmania:swift-export-embeddable:2.4.20-km.2`. Release availability is established by the tagged release and independently retrieved Maven artifacts, not by a locally built file. The source branch and earlier diagnostic receipts alone are not publication evidence.
 
+The current repair branch prepares `2.4.20-km.3`, adding one-step typed `ByteArray` constructors. Its isolated Debug fixture passes Native compilation/linking, six Swift behavior cases and seven C boundary processes, including checked bounds and receiver rejection. Two portable source builds produce identical components. This candidate is not published, and Byteorder's three real consumer cases and the exact-final release gates remain required. Other primitive-array constructors are unchanged.
+
 ## Compatibility
 
 This version targets **KGP 2.4.20 and Kotlin/Native 2.4.20**, initially on macOS ARM64 with Swift 6.3.3 and macOS 15 deployment. Generated dependency sources compile in Swift **5 language mode**; authored consumer tests compile in Swift **6 language mode**. Both retain warnings as errors, as does the generated Native Kotlin bridge. Swift tools-version 5.9 is a manifest/API minimum and package default, not an older compiler installation.

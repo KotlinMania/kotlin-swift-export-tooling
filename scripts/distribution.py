@@ -34,10 +34,14 @@ def prepare(build, output):
     common = {**licenses, 'inputs.lock.json': (REPO / 'inputs.lock.json').read_bytes()}
     if 'array_repair' in lock:
         common[lock['array_repair']] = (REPO / lock['array_repair']).read_bytes()
+    if 'bytearray_repair' in lock:
+        common[lock['bytearray_repair']] = (REPO / lock['bytearray_repair']).read_bytes()
     sources = {**common, **{row['path']: (build / 'candidate/sources' / row['name']).read_bytes() for row in lock['sources']}}
     sources.update({str(path.relative_to(REPO)): path.read_bytes() for path in sorted((REPO / 'patches').rglob('*.patch'))})
     if 'array_repair' in lock:
         sources.update({str(path.relative_to(REPO)): path.read_bytes() for path in sorted((REPO / 'producer/arrays').iterdir()) if path.is_file()})
+    if 'bytearray_repair' in lock:
+        sources.update({str(path.relative_to(REPO)): path.read_bytes() for path in sorted((REPO / 'producer/byte-arrays').iterdir()) if path.is_file()})
     archive(output / (prefix + '-sources.jar'), sources)
     documentation = '<!doctype html><html lang="en"><meta charset="utf-8"><title>KotlinMania Swift export tooling</title><body><pre>' + html.escape((REPO / 'README.md').read_text()) + '</pre></body></html>\n'
     archive(output / (prefix + '-javadoc.jar'), {**common, 'index.html': documentation.encode()})

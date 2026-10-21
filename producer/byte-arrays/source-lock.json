@@ -1,5 +1,5 @@
 {
-  "state": "source candidate only; not compiled, packaged, adopted or published",
+  "state": "Isolated Debug Native bridge/link/embed, six Swift cases and seven C boundary processes pass; not yet a release",
   "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
   "source_url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirInitFromKtSymbol.kt",
   "baseline_sha256": "be9085f28f4f359cd41526090b0692d48497f6596115fb91a4fd44bf52f70cff",
@@ -7,5 +7,6 @@
   "patch_sha256": "51e491c84dbac70d9bdf77e79ba61c194f5b31c84cc591758ce7733bcc18e923",
   "scope": "Only kotlin.ByteArray constructors; original ordinary allocation/init path and array exclusion remain unchanged",
   "allocation": "Typed Kotlin ByteArray constructor once, retained result via the existing bridge return conversion, Swift super initializer adopts that reference",
-  "next_gate": "Exact unmodified constructor/source-inline class baseline audit, candidate compile, changed-class/member/reference closure audit, coherent diagnostic package; then Native/Swift fixture and Byteorder three existing cases"
+  "next_gate": "Reproducible portable source build, Byteorder three unchanged consumer cases, exact-final CI/main and Maven verification",
+  "isolated_debug_handoff_sha256": "e14ecf8998c18d6beb5f40a277f9cc1eaca225be9c533e05a666fce0dd4d1411"
 }
