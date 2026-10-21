@@ -1,0 +1,38 @@
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+import java.security.MessageDigest
+def root = new File(System.getenv('ARRAY_DIAGNOSTIC_ROOT')).canonicalFile
+def cp = new JsonSlurper().parse(new File(root, 'compiler-classpath.json'))
+gradle.beforeProject { p -> p.layout.buildDirectory.set(new File(root, 'build')) }
+gradle.projectsEvaluated {
+ allprojects { p ->
+  p.tasks.configureEach { t ->
+   if(t.hasProperty('syntheticImportProjectRoot')) t.syntheticImportProjectRoot.set(new File(root, 'swiftpm-import/default'))
+   if(t.hasProperty('swiftPMDependenciesCheckout')) t.swiftPMDependenciesCheckout.set(new File(root, 'swiftpm-checkout/default'))
+  }
+  p.tasks.matching { it.class.name.contains("KotlinNativeLink") }.configureEach { t ->
+   def path = new File(root, 'native-auto-cache/'+t.name)
+   t.toolOptions.freeCompilerArgs.add('-Xauto-cache-dir='+path.absolutePath)
+   t.doFirst { path.mkdirs() }
+  }
+  p.tasks.matching { it.name == 'macosArm64DebugSwiftExport' }.configureEach { t ->
+   t.swiftExportClasspath.setFrom(cp.collect { new File(it.path) })
+   t.doFirst {
+    def actual=t.swiftExportClasspath.files.collect { f -> [path:f.absolutePath, sha256:MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString()] }
+    if(actual.size()!=cp.size() || actual.any { a -> !cp.any { it.path==a.path && it.sha256==a.sha256 } }) throw new GradleException('Worker closure differs')
+    new File(root,'actual-classpath.json').text=JsonOutput.prettyPrint(JsonOutput.toJson(actual))+'\n'
+   }
+  }
+  p.tasks.matching { it.name == 'macosArm64DebugGenerateSPMPackage' }.configureEach { t ->
+   t.doLast {
+    def file = new File(root,'build/SPMPackage/macosArm64/Debug/Package.swift')
+    if(!file.text.startsWith('// swift-tools-version: 5.9')) throw new GradleException('Unexpected producer manifest')
+   }
+  }
+ }
+}
+gradle.taskGraph.whenReady { graph ->
+ def outside=graph.allTasks.collectMany { t -> t.outputs.files.files.findAll { !it.canonicalPath.startsWith(root.canonicalPath+'/') }.collect { [task:t.path,path:it.absolutePath] } }
+ new File(root,'output-guard.json').text=JsonOutput.prettyPrint(JsonOutput.toJson(outside))+'\n'
+ if(!outside.empty) throw new GradleException('Output isolation violation: '+outside)
+}

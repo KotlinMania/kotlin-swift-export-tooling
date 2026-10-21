@@ -14,7 +14,8 @@ args = parser.parse_args()
 assert not args.output.exists(), 'New retrieval directory required'
 args.output.mkdir(parents=True)
 lock = json.loads((Path(__file__).resolve().parents[1] / 'verification/release-artifacts.json').read_text())
-base = 'https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.1/'
+version = json.loads((Path(__file__).resolve().parents[1] / 'inputs.lock.json').read_text())['version']
+base = 'https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/' + version + '/'
 signatures = {}
 for name, expected in lock['files'].items():
     for suffix in ['', '.asc', '.sha256']:

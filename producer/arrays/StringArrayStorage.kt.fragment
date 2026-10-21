@@ -1,0 +1,72 @@
+
+public class KotlinStringArrayStorage(public val values: kotlin.Array<kotlin.String>) {
+    override fun equals(other: kotlin.Any?): kotlin.Boolean = other is KotlinStringArrayStorage && values === other.values
+    override fun hashCode(): kotlin.Int = values.hashCode()
+}
+
+public class KotlinStringArrayIteratorStorage(public val iterator: kotlin.collections.Iterator<kotlin.String>)
+
+@ExportedBridge("KotlinStringArraySize")
+public fun kotlinStringArraySize(reference: kotlin.native.internal.NativePtr): kotlin.Int =
+    (kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayStorage).values.size
+
+@ExportedBridge("KotlinStringArrayGet")
+public fun kotlinStringArrayGet(reference: kotlin.native.internal.NativePtr, index: kotlin.Int): kotlin.native.internal.NativePtr =
+    (kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayStorage).values[index].objcPtr()
+
+@ExportedBridge("KotlinStringArraySet")
+public fun kotlinStringArraySet(reference: kotlin.native.internal.NativePtr, index: kotlin.Int, value: kotlin.native.internal.NativePtr) {
+    val storage = kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayStorage
+    val string = interpretObjCPointer<kotlin.String>(value)
+    storage.values[index] = string
+}
+
+@ExportedBridge("KotlinStringArrayCreateIterator")
+public fun kotlinStringArrayIterator(reference: kotlin.native.internal.NativePtr): kotlin.native.internal.NativePtr {
+    val storage = kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayStorage
+    return kotlin.native.internal.ref.createRetainedExternalRCRef(KotlinStringArrayIteratorStorage(storage.values.iterator()))
+}
+
+@ExportedBridge("KotlinStringArrayIteratorHasNext")
+public fun kotlinStringArrayIteratorHasNext(reference: kotlin.native.internal.NativePtr): kotlin.Boolean =
+    (kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayIteratorStorage).iterator.hasNext()
+
+@ExportedBridge("KotlinStringArrayIteratorNext")
+public fun kotlinStringArrayIteratorNext(reference: kotlin.native.internal.NativePtr): kotlin.native.internal.NativePtr =
+    (kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayIteratorStorage).iterator.next().objcPtr()
+
+@ExportedBridge("KotlinStringArrayToObjC")
+public fun kotlinStringArrayToObjC(reference: kotlin.native.internal.NativePtr): kotlin.native.internal.NativePtr =
+    (kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayStorage).objcPtr()
+
+@ExportedBridge("KotlinStringArrayFromObjC")
+public fun kotlinStringArrayFromObjC(value: kotlin.native.internal.NativePtr): kotlin.native.internal.NativePtr {
+    val storage = interpretObjCPointer<KotlinStringArrayStorage>(value)
+    return kotlin.native.internal.ref.createRetainedExternalRCRef(storage)
+}
+
+@ExportedBridge("KotlinStringArrayHash")
+public fun kotlinStringArrayHash(reference: kotlin.native.internal.NativePtr): kotlin.Int =
+    (kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayStorage).values.hashCode()
+
+@ExportedBridge("KotlinStringArrayEquals")
+public fun kotlinStringArrayEquals(left: kotlin.native.internal.NativePtr, right: kotlin.native.internal.NativePtr): kotlin.Boolean {
+    val first = kotlin.native.internal.ref.dereferenceExternalRCRef(left) as KotlinStringArrayStorage
+    val second = kotlin.native.internal.ref.dereferenceExternalRCRef(right) as KotlinStringArrayStorage
+    return first.values === second.values
+}
+
+@ExportedBridge("KotlinStringArrayCopyRef")
+public fun kotlinStringArrayCopyReference(reference: kotlin.native.internal.NativePtr): kotlin.native.internal.NativePtr {
+    val storage = kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayStorage
+    return kotlin.native.internal.ref.createRetainedExternalRCRef(storage)
+}
+
+public fun kotlinStringArrayConsumeReference(reference: kotlin.native.internal.NativePtr): kotlin.Array<kotlin.String> =
+    try {
+        val storage = kotlin.native.internal.ref.dereferenceExternalRCRef(reference) as KotlinStringArrayStorage
+        storage.values
+    } finally {
+        kotlin.native.internal.ref.releaseExternalRCRef(reference)
+        kotlin.native.internal.ref.disposeExternalRCRef(reference)
+    }

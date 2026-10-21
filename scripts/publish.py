@@ -36,8 +36,9 @@ def publish(args):
     expected = json.loads((REPO / 'verification/release-artifacts.json').read_text())
     actual = json.loads((args.distribution / 'distribution.json').read_text())
     assert actual == expected, 'Release files differ from independently tested candidate'
-    prefix = 'swift-export-embeddable-2.4.20-km.1'
-    url = 'https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.1/' + prefix + '.pom'
+    version = json.loads((REPO / 'inputs.lock.json').read_text())['version']
+    prefix = 'swift-export-embeddable-' + version
+    url = 'https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/' + version + '/' + prefix + '.pom'
     try:
         urllib.request.urlopen(url, timeout=30).close()
     except urllib.error.HTTPError as error:
@@ -61,7 +62,7 @@ def publish(args):
     with (args.output / 'signing.log').open('w') as log:
         subprocess.run(['gradle', 'signRelease', '--no-daemon', '--max-workers=2', '--no-configuration-cache', '--console=plain', '-PdistributionDirectory=' + str(args.distribution.resolve())], cwd=REPO, env=env, stdout=log, stderr=subprocess.STDOUT, check=True)
     signatures = verify_signatures(args.distribution.resolve(), actual['files'], args.output / 'signature-verification')
-    layout = args.output / 'staging/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.1'
+    layout = args.output / 'staging/io/github/kotlinmania/swift-export-embeddable' / version
     layout.mkdir(parents=True)
     for name in actual['files']:
         for source in [args.distribution / name, args.distribution / (name + '.asc')]:

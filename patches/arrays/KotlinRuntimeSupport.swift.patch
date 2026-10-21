@@ -1,0 +1,114 @@
+--- a/KotlinRuntimeSupport.swift
++++ b/KotlinRuntimeSupport.swift
+@@ -1,4 +1,4 @@
+-@_implementationOnly import KotlinRuntimeSupportBridge
++internal import KotlinRuntimeSupportBridge
+ import KotlinRuntime
+ 
+ public struct KotlinError: Error & CustomStringConvertible {
+@@ -194,7 +194,7 @@
+         case 10: let v = KotlinBridgeable_Bool_unbox(ref);    KotlinBridgeable_disposeRef(ref); return v
+         case 11: let v = KotlinBridgeable_Float_unbox(ref);   KotlinBridgeable_disposeRef(ref); return v
+         case 12: let v = KotlinBridgeable_Double_unbox(ref);  KotlinBridgeable_disposeRef(ref); return v
+-        case 13: let v: [Any] = KotlinBridgeable_Array_unbox(ref) as! [Any]; KotlinBridgeable_disposeRef(ref); return v
++        case 13: let v: [Any] = KotlinBridgeable_Array_unbox(ref); KotlinBridgeable_disposeRef(ref); return v
+         case 14:
+             let v = Unmanaged<NSSet>.fromOpaque(KotlinBridgeable_Set_unbox(ref)).takeUnretainedValue() as! Set<AnyHashable>
+             KotlinBridgeable_disposeRef(ref); return v
+@@ -202,7 +202,7 @@
+             let v = Unmanaged<NSDictionary>.fromOpaque(KotlinBridgeable_Dictionary_unbox(ref)).takeUnretainedValue() as! [AnyHashable: Any]
+             KotlinBridgeable_disposeRef(ref); return v
+         default:
+-            return __createProtocolWrapper(externalRCRef: ref) as! any _KotlinBridgeable
++            return __createProtocolWrapper(externalRCRef: ref)!
+         }
+     }
+ }
+@@ -222,3 +222,87 @@
+         return openAndWrap(markerType)
+     }
+ }
++
++import Foundation
++
++public final class KotlinStringArray: NSObject {
++    private let reference: Swift.UnsafeMutableRawPointer
++
++    package init(__externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?) {
++        guard let reference = __externalRCRefUnsafe else {
++            preconditionFailure("Missing Kotlin string array reference")
++        }
++        self.reference = reference
++        super.init()
++    }
++
++    deinit { KotlinBridgeable_disposeRef(reference) }
++
++    package func __copyExternalRCRef() -> Swift.UnsafeMutableRawPointer {
++        withExtendedLifetime(self) { KotlinStringArrayCopyRef(reference) }
++    }
++
++    public override var hash: Swift.Int {
++        withExtendedLifetime(self) { Swift.Int(KotlinStringArrayHash(reference)) }
++    }
++
++    public override func isEqual(_ object: Any?) -> Swift.Bool {
++        guard let other = object as? KotlinStringArray else { return false }
++        return withExtendedLifetime((self, other)) {
++            KotlinStringArrayEquals(reference, other.reference)
++        }
++    }
++
++    package func __asObjC() -> NSObject {
++        withExtendedLifetime(self) { KotlinStringArrayToObjC(reference) }
++    }
++
++    package static func __fromObjC(_ value: NSObject) -> KotlinStringArray {
++        KotlinStringArray(__externalRCRefUnsafe: KotlinStringArrayFromObjC(value))
++    }
++
++    public var size: Swift.Int32 {
++        withExtendedLifetime(self) {
++            KotlinStringArraySize(reference)
++        }
++    }
++
++    public func get(index: Swift.Int32) -> Swift.String {
++        withExtendedLifetime(self) {
++            KotlinStringArrayGet(reference, index)
++        }
++    }
++
++    public func set(index: Swift.Int32, value: Swift.String) {
++        withExtendedLifetime(self) {
++            KotlinStringArraySet(reference, index, value)
++        }
++    }
++
++    public func iterator() -> KotlinStringArrayIterator {
++        withExtendedLifetime(self) {
++            KotlinStringArrayIterator(__externalRCRefUnsafe: KotlinStringArrayCreateIterator(reference), options: .asBoundBridge)
++        }
++    }
++}
++
++public final class KotlinStringArrayIterator: KotlinRuntime.KotlinBase {
++    package override init(
++        __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?,
++        options: KotlinRuntime.KotlinBaseConstructionOptions
++    ) {
++        super.init(__externalRCRefUnsafe: __externalRCRefUnsafe, options: options)
++    }
++
++    public func hasNext() -> Swift.Bool {
++        withExtendedLifetime(self) {
++            KotlinStringArrayIteratorHasNext(self.__externalRCRef())
++        }
++    }
++
++    public func next() -> Swift.String {
++        withExtendedLifetime(self) {
++            KotlinStringArrayIteratorNext(self.__externalRCRef())
++        }
++    }
++}

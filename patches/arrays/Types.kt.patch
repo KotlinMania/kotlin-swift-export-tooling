@@ -1,0 +1,45 @@
+--- a/Types.kt
++++ b/Types.kt
+@@ -43,9 +43,10 @@
+     data object NSString : Predefined("NSString *")
+     data object NSNumber : Predefined("NSNumber *")
+     data object NSError : Predefined("NSError *")
++    data object NSObjectClass : Predefined("NSObject *")
+     data object NSObject : Predefined("id<NSObject>") // NSProxy and NSObject conforms to this
+ 
+-    sealed class Generic(base: String, vararg args: CType) : Predefined(
++    sealed class Generic(base: String, vararg val args: CType) : Predefined(
+         repr = "$base<${args.joinToString(", ") { it.render("").trim() }}> *"
+     )
+ 
+@@ -141,6 +142,8 @@
+     CType.NSString -> "Swift.String"
+     CType.NSError -> "Swift.Error"
+     CType.NSObject -> "Any"
++    CType.NSObjectClass -> "Foundation.NSObject"
++    is CType.Generic -> if (containsNSObjectClass()) carrierSwiftType() else "Any"
+     CType.NSNumber -> "Foundation.NSNumber"
+     is CType.NullabilityAnnotated -> wrapped.toSwiftTypeName() + "?"
+     is CType.BlockPointer -> toSwiftTypeName()
+@@ -150,4 +153,19 @@
+ internal fun CType.BlockPointer.toSwiftTypeName(): String {
+     val params = parameters.joinToString(", ") { it.toSwiftTypeName() }
+     return "($params) -> ${returnType.toSwiftTypeName()}"
+-}
+\ No newline at end of file
++}
++private fun CType.containsNSObjectClass(): Boolean = when (this) {
++    CType.NSObjectClass -> true
++    is CType.Generic -> args.any { it.containsNSObjectClass() }
++    is CType.NullabilityAnnotated -> wrapped.containsNSObjectClass()
++    else -> false
++}
++
++private fun CType.carrierSwiftType(hashablePosition: Boolean = false): String = when {
++    hashablePosition && (this == CType.id || this == CType.NSObject || this == CType.NSError || this is CType.Generic) -> "Swift.AnyHashable"
++    this is CType.NSArray -> "Swift.Array<${args[0].carrierSwiftType()}>"
++    this is CType.NSSet -> "Swift.Set<${args[0].carrierSwiftType(hashablePosition = true)}>"
++    this is CType.NSDictionary -> "Swift.Dictionary<${args[0].carrierSwiftType(hashablePosition = true)}, ${args[1].carrierSwiftType()}>"
++    this is CType.NullabilityAnnotated -> wrapped.carrierSwiftType(hashablePosition) + "?"
++    else -> toSwiftTypeName()
++}

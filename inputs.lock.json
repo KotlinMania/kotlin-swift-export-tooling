@@ -1,21 +1,11 @@
 {
-  "version": "2.4.20-km.1",
+  "version": "2.4.20-km.2",
   "group": "io.github.kotlinmania",
   "artifact": "swift-export-embeddable",
   "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
   "official_base_sha256": "24c6159bcf0087ecf86bfc9bad01a975e192abcf75005b248292d85a139c2055",
-  "diagnostic_reference_sha256": "32f6c1ac5f137a204bdcaca192b0e59a9999f72d9c549ea0018b6d5fe77b797e",
+  "diagnostic_reference_sha256": "86974de822d8a521a53d5aa2b32a3f69d9970a33d1eaa81df39c405136299dc7",
   "sources": [
-    {
-      "name": "TypeBridging.kt",
-      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
-      "baseline_sha256": "7ae7399f7359e7661695beec2239b21b13b277e7ebe67740fb65e2a3293246ef",
-      "candidate_sha256": "9ace3dc7fede02c03a94554c784abd4a161757c858b23cbd197b069018601a3d",
-      "patch": "patches/TypeBridging.kt.patch",
-      "patch_sha256": "f4dfc4405fd8ad11b19b40073853beec4d4f96ec9df281a81b097377f9ca2ce7",
-      "kind": "providers",
-      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt"
-    },
     {
       "name": "SirBridgeProviderImpl.kt",
       "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirBridgeProviderImpl.kt",
@@ -93,26 +83,6 @@
       "archive_entry": "swift/KotlinCoroutineSupport.swift"
     },
     {
-      "name": "KotlinRuntimeSupport.kt",
-      "path": "native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.kt",
-      "baseline_sha256": "d771d2df25034de4ff08ba8522af8833d82425cc8b3a78521720d2f1ecfa6b3e",
-      "candidate_sha256": "91a732acb826fc148034110195654defc40155c663d17e1b5b26223c1c039c24",
-      "patch": "patches/KotlinRuntimeSupport.kt.patch",
-      "patch_sha256": "e9e02dbd43f2569bb137829a00f1f51228765a0229eab1beb00686f32607ba0b",
-      "kind": "resource",
-      "archive_entry": "swift/KotlinRuntimeSupport.kt"
-    },
-    {
-      "name": "KotlinRuntimeSupport.swift",
-      "path": "native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.swift",
-      "baseline_sha256": "1a241c02c38f69a59af1778022b814098478e32e747ae8eb9fe922d32a619d65",
-      "candidate_sha256": "dbfc468afd0cbf3325e555ec2ded72f583e1fe4ac3fd690cf831ff8bf3668266",
-      "patch": "patches/KotlinRuntimeSupport.swift.patch",
-      "patch_sha256": "e9a565a88eda6b11b7df8f56f18321c4859f913b721871b02054ee9c356b2570",
-      "kind": "resource",
-      "archive_entry": "swift/KotlinRuntimeSupport.swift"
-    },
-    {
       "name": "KotlinBase.h",
       "path": "kotlin-native/runtime/src/objcExport/cpp/KotlinBase.h",
       "baseline_sha256": "14390b9a40bcd8f924909692249ca95468cd3de36157be762371b1673dab86f3",
@@ -130,6 +100,74 @@
       "candidate_sha256": "72c6b7f41c82a8e200d7f7e3dcb0daf4aa8b687e4a7edb3e188b43031551065a",
       "kind": "printer-baseline-inline",
       "reason": "Source interface reproduces official delegation member order in original baseline; candidate uses unchanged official bytecode interface, as in reviewed build."
+    },
+    {
+      "name": "TypeBridging.kt",
+      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
+      "baseline_sha256": "7ae7399f7359e7661695beec2239b21b13b277e7ebe67740fb65e2a3293246ef",
+      "candidate_sha256": "979791b1efb867085e28292464888450d81d728940d384647dbc56094bb58409",
+      "patch": "patches/arrays/TypeBridging.kt.patch",
+      "patch_sha256": "665388e95c42c094bf703ebc88041cd3de76a0f6a4ad4bd5cc2ca9743537f7c9",
+      "kind": "array"
+    },
+    {
+      "name": "Types.kt",
+      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Types.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Types.kt",
+      "baseline_sha256": "075488b7f99439405f536fe5fc5ee2075f5324f611aae9d144056a3fcda5c6f4",
+      "candidate_sha256": "eb3f90b3f1235872b1a5a815ffa152395d152ace1204dbae2e230ffc7d5c9e5d",
+      "patch": "patches/arrays/Types.kt.patch",
+      "patch_sha256": "5a6ede433b1a900aac1d9e9e817700349e74eb8fab9beca0e437293b0ab997bd",
+      "kind": "array"
+    },
+    {
+      "name": "SirCustomTypeTranslatorImpl.kt",
+      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirCustomTypeTranslatorImpl.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirCustomTypeTranslatorImpl.kt",
+      "baseline_sha256": "faf1560cab962cfefacb69d005d92404f000cde2a895fabe5c4490daf36cebe2",
+      "candidate_sha256": "bb28c740377368f301837e15cdd7fa71b929ceb0fe17b14b08f0000b9ed07be1",
+      "patch": "patches/arrays/SirCustomTypeTranslatorImpl.kt.patch",
+      "patch_sha256": "d69d7092941d131a13b6cb6ae89f1b0d6b7f50e1e1e9177e9951a15763ae2e0b",
+      "kind": "array"
+    },
+    {
+      "name": "SirSession.kt",
+      "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/SirSession.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/SirSession.kt",
+      "baseline_sha256": "217aebc0a2afe9ae831bf0160951c64867f6cc72e800a2dca7b1f7e43ec6df31",
+      "candidate_sha256": "217aebc0a2afe9ae831bf0160951c64867f6cc72e800a2dca7b1f7e43ec6df31",
+      "kind": "array"
+    },
+    {
+      "name": "KotlinRuntimeSupport.kt",
+      "path": "native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.kt",
+      "baseline_sha256": "d771d2df25034de4ff08ba8522af8833d82425cc8b3a78521720d2f1ecfa6b3e",
+      "candidate_sha256": "e42d6b009a268a83d484f112badb157843f7a72dcd0fecee676f8c668c59a549",
+      "patch": "patches/arrays/KotlinRuntimeSupport.kt.patch",
+      "patch_sha256": "eb3e779a615fc0f42d1753ac34220b29aaf8b4de91652157d12c07c2c7e99c62",
+      "kind": "resource",
+      "archive_entry": "swift/KotlinRuntimeSupport.kt"
+    },
+    {
+      "name": "KotlinRuntimeSupport.swift",
+      "path": "native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.swift",
+      "baseline_sha256": "1a241c02c38f69a59af1778022b814098478e32e747ae8eb9fe922d32a619d65",
+      "candidate_sha256": "6aaec25a58b2d42101dd226b26b5be035dfa00bb090433cef63230514cc2eaa3",
+      "patch": "patches/arrays/KotlinRuntimeSupport.swift.patch",
+      "patch_sha256": "0fcaad7c7135eb7e4f2e31ebf66d523a22be8c3f7c7a3fd3b512ca7fd4549fe9",
+      "kind": "resource",
+      "archive_entry": "swift/KotlinRuntimeSupport.swift"
+    },
+    {
+      "name": "KotlinRuntimeSupport.h",
+      "path": "native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.h",
+      "baseline_sha256": "ea3a470a59ed2621e2da337dee10972cec62b826b44edb87a91e08537926a155",
+      "candidate_sha256": "9a7c53b5f2e3dbb49fb8d7c77d8814878074b8a54bdb92f111c32f9f8c1d045d",
+      "patch": "patches/arrays/KotlinRuntimeSupport.h.patch",
+      "patch_sha256": "b68a27c19cbe5353b46ac7b18f3aa101d648a69adc7c5010e15d5a59abf25477",
+      "kind": "resource",
+      "archive_entry": "swift/KotlinRuntimeSupport.h"
     }
   ],
   "tools": [
@@ -321,6 +359,15 @@
       "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/swift-export-embeddable/2.4.20/swift-export-embeddable-2.4.20.jar",
       "sha256": "24c6159bcf0087ecf86bfc9bad01a975e192abcf75005b248292d85a139c2055",
       "scope": "worker"
+    },
+    {
+      "group": "io.github.kotlinmania",
+      "artifact": "swift-export-embeddable",
+      "version": "2.4.20-km.1",
+      "url": "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.1/swift-export-embeddable-2.4.20-km.1.jar",
+      "sha256": "e1b871c93dd9556fb7235cd05f70b3c2bc7d32f2cb1b69f1d9161918fd088f3a",
+      "name": "swift-export-embeddable-2.4.20-km.1.jar",
+      "scope": "base"
     }
   ],
   "selected_classes": {
@@ -337,22 +384,25 @@
       "runtime_class_sha256": "17456cab4805171b83025147025e92112676498bff85e2e0c26c4a03c9a6c6be"
     },
     "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsCovariantBlock$inKotlinSources$1.class": {
-      "baseline_sha256": "df9bba9c18efbb5916ed3438f185e8544b02bd3989228da6a54004d0c78bc577",
-      "candidate_sha256": "994386e54b1dd26386ef29878997de2c6d9e6f1796fdff15b81c5472dfee58dd",
-      "kind": "providers",
-      "runtime_class_sha256": "e0fa89b04ef61f48b6e7b3bbd9d5c5383f67bcc3bbcfc26f5cb0c8fc859bb2e8"
+      "kind": "array",
+      "candidate_sha256": "7631d42ac869c381f027cde9abfb2a045533262f7903ad753063fb4a62c2cfd4",
+      "baseline_sha256": "3245f46bbade802a839413d4e122fd4dd203076a776690c648320312337f98b5",
+      "added": false,
+      "runtime_class_sha256": "f576f94b281b503326ee111946cb8f4fb022e43500482d730009d3abca966a3e"
     },
     "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsCovariantBlock.class": {
-      "baseline_sha256": "cb7625a33a47e226230aa1add9e8c5bed2dd54ff4b0652e0d0121a3a93f8531b",
-      "candidate_sha256": "65ac574dc41be05ca044a749fe34b73db0921c64cf60f8a8424a744b5f775362",
-      "kind": "providers",
-      "runtime_class_sha256": "de3fe4ad91136116dbef3effbe5a7c3b90a3c627976b53fbb390a1b37a73576f"
+      "kind": "array",
+      "candidate_sha256": "bd8c68015324e7f895eeed359de38254dac687d6c8f257c49a9fe789734c7e70",
+      "baseline_sha256": "c7d5f42b3cd82ad0e5e1bc6ed4e25f620189eca05361872306a217c95041ecbc",
+      "added": false,
+      "runtime_class_sha256": "067d040e32543845fa98444f2ff1224b435005f1da5e22b553e809a66c664268"
     },
     "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSSet$inSwiftSources$1.class": {
-      "baseline_sha256": "bf4924601430e3bf18e3aaa8e805db830e55c2b000b39ed87c5abd92b6f6353f",
-      "candidate_sha256": "7f83620394e33756e4362b389edfc1574fd694775facc485ab9b4fe30155f562",
-      "kind": "providers",
-      "runtime_class_sha256": "3af9c2e37c0f7c8e4c8e8693544fbc1379ad18baabbb05df3f3f9ec8c849f275"
+      "kind": "array",
+      "candidate_sha256": "9e71b1f3d433ef61d84b3869a45ac598351c939b1d4d48b0332dd142bdd7cb40",
+      "baseline_sha256": "b64b0847ce4a3f0052057828294aea5b313e0c2391e790918a4e6f9791bcf1bc",
+      "added": false,
+      "runtime_class_sha256": "d0b6400dc3beaba358025ade5e6bf9a385ca6bac2083162ab0969b59a5727eb2"
     },
     "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNothing$inKotlinSources$1.class": {
       "baseline_sha256": "d6daf5d8fbaca79ba607a3638ff4732e7a5e6d6daf7e8c4ecd085c71cd468b6d",
@@ -379,10 +429,11 @@
       "runtime_class_sha256": "56f3f9c32b46e054e4e28ec163005b3bbdcbfb879bde5ba52651be144aecd051"
     },
     "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsOptionalWrapper$inSwiftSources$1.class": {
-      "baseline_sha256": "7025d6479dae9211388e0689d84580508be6370f94d6efcb86b7959f3a18708c",
-      "candidate_sha256": "56a341662c568ecd16f88f0705f468a907f06cd10a026482fa462538ae0049cc",
-      "kind": "providers",
-      "runtime_class_sha256": "4acf329a3389df1f1ce88c7730c96b0a0c3b1523c0602847c5ae85e2c0d019b4"
+      "kind": "array",
+      "candidate_sha256": "57b3b2a2699416a3e564f975eeed865b9d9543ddacddcac505503c1572e159de",
+      "baseline_sha256": "aefda5bfcaed1cc21c30547108198fe4f22dde0c53cd494ae7212aada92121ea",
+      "added": false,
+      "runtime_class_sha256": "b88651a1874be863e2360bb79aa5f446f9328b84e0b4de2051035cc12294d074"
     },
     "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsVoid$inKotlinSources$1.class": {
       "baseline_sha256": "4a7303051e928b0bfc0bcafb03029b59bf739f5a43a1301cfade42d9ac0a2012",
@@ -419,14 +470,197 @@
       "candidate_sha256": "e19da936c557ec4eeb81dee4a138088087d7d56d77b546e647811c4b9e45c9e2",
       "kind": "printer",
       "runtime_class_sha256": "cd1b4d3533176d45e39aa847ee6fda5e65bd9992aaac15728019537901bc63e7"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/AsNullableObjCCarrier$inSwiftSources$1.class": {
+      "kind": "array",
+      "candidate_sha256": "bdad0242523cabb9407bf71d350e42c5270bff92783d2a62dd383b0fe9efcee8",
+      "baseline_sha256": null,
+      "added": true,
+      "runtime_class_sha256": "097a9e116ff7696b6cb8185f07e8550c6e8c4ae5c1eece15afa15bee12a62a3d"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/AsNullableObjCCarrier.class": {
+      "kind": "array",
+      "candidate_sha256": "78ee520fa32cfca37f08192f8e693f37e54ffc4a4bbbb72c39f4441e8f1e718e",
+      "baseline_sha256": null,
+      "added": true,
+      "runtime_class_sha256": "ec54bfc7c7983778b47bfaca569f9145281dbd7cbd93266e97d04b0e398cabf9"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/AsStringArray$Companion.class": {
+      "kind": "array",
+      "candidate_sha256": "9cca0a69e2e840301950e948e77eabf3f354a8092105cd77aabf5dee2906fa97",
+      "baseline_sha256": null,
+      "added": true,
+      "runtime_class_sha256": "23182141f4bd543e2c96f268c4516e90cde20de73f85a0e0a4c504244d0916da"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/AsStringArray$inKotlinSources$1.class": {
+      "kind": "array",
+      "candidate_sha256": "3fdcea9bfa35b3a2bb6acfe64212504d564c858815f0e7a73b187874762be2ca",
+      "baseline_sha256": null,
+      "added": true,
+      "runtime_class_sha256": "d7dc064ef7c71b93a1432ff01ad45647f1d50f76dbbd8520c271b0b498e44b89"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/AsStringArray$inSwiftSources$1.class": {
+      "kind": "array",
+      "candidate_sha256": "eb60e7b8ded43a457f372c6fb3246ae1a8ff080e7b4c157e76f3d214ddfbc85c",
+      "baseline_sha256": null,
+      "added": true,
+      "runtime_class_sha256": "faa338d8b5909b580c53905d6028de86a1c472969b431e6434613cc5d39fdcec"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/AsStringArray.class": {
+      "kind": "array",
+      "candidate_sha256": "769e6294a36d9e0e4a05dd2f6a4c62623487d2e63dc5aa034fe84a999cf69846",
+      "baseline_sha256": null,
+      "added": true,
+      "runtime_class_sha256": "e0313bd4292ef91d272c1ad88c08ec4b3d4b0a6d3818d0e9d098af5aa6d9299a"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/AsStringArrayObjC$inSwiftSources$1.class": {
+      "kind": "array",
+      "candidate_sha256": "16cb02f6e31e486bb2d0dcdbfe1ad5689aa535bed5ee815799d0bc3b2d86ab5a",
+      "baseline_sha256": null,
+      "added": true,
+      "runtime_class_sha256": "f07bb1ec42894f706c684fa17af957deed2738640c82afb9af7fe14927a116f6"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/AsStringArrayObjC.class": {
+      "kind": "array",
+      "candidate_sha256": "490f9a1d2334b035c0844d8ef031e0132a7f63fac5258977a6d12f4ab41e6783",
+      "baseline_sha256": null,
+      "added": true,
+      "runtime_class_sha256": "246db387ea20aeb90c8d3e7c6ae86b4e4831512b919e9f1a9a2827a336fe1f3c"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsContravariantBlock$inKotlinSources$1.class": {
+      "kind": "array",
+      "candidate_sha256": "532da770c951a43f8944ef0f2327bf8560d12c61212cc6fff40adc8c83feffcd",
+      "baseline_sha256": "c42d3299c1f7429c0a5d422cd7f8862fec609db47f23e43256101c22a4308a8b",
+      "added": false,
+      "runtime_class_sha256": "737204e0c4f5d9bb2093e47352bac39336c0589fd28c6204ccaff53c2817b2d9"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray$inSwiftSources$1.class": {
+      "kind": "array",
+      "candidate_sha256": "10ee495cfc9bc2974cfc2423945f15ccd13e3e41e00359115b137445914c2862",
+      "baseline_sha256": "2e70e12821b32326133873efec988e8deae3fb06ee0c39904a1f71640b066e90",
+      "added": false,
+      "runtime_class_sha256": "0b465e556e737229df8765dfe8edeb85e4b8bb80e79107bda8f6023713ecabef"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray.class": {
+      "kind": "array",
+      "candidate_sha256": "1cfeb8bf473a2b62d9e1e04abf92b79dea85bdcd551aa78ae17a22ba3ed0d98a",
+      "baseline_sha256": "aca01185ea6d22b19dd0e4b413171365d6b3bec28134d1974c1fd31570ecc173",
+      "added": false,
+      "runtime_class_sha256": "620348239c8551c473a3f3b7ea71346803d2d468715fd5556769835bd74bd38f"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArrayForVariadic$inKotlinSources$1.class": {
+      "kind": "array",
+      "candidate_sha256": "47b92808a4dd3dde226bee48bf301b05edafd01a1548dd072b228e4573a7bbac",
+      "baseline_sha256": "e6b0cb89fd840b3a369b36aea7ce3d0cb65555f4cfaf976b407c1e69ee1a319d",
+      "added": false,
+      "runtime_class_sha256": "e6c51a41f86c796e1933d64daec83f98ffc93e35e5a131fa72ecaa48c4b2ae88"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArrayForVariadic.class": {
+      "kind": "array",
+      "candidate_sha256": "1824cc72a8de5032dfee17bada1272d4969ea6cdd425a8136f44224fc9ec3d40",
+      "baseline_sha256": "7124b499df6d61c0376f7fcf15826f2a800fe9f66ca65ebdb7d5b879b26f95f3",
+      "added": false,
+      "runtime_class_sha256": "620fb395a5d72f5bcefa29f76bd88a0201467cbd95c4bc1d501cd4e2407e5142"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection.class": {
+      "kind": "array",
+      "candidate_sha256": "2a488be7f09c0b2afd3e5d051fa1fed0777dd34a92066775f7faed874d2fe25f",
+      "baseline_sha256": "076586c37dcf6cb2ab057296d25a215ef717c8f74c7abdfdd1d41bacbda3c782",
+      "added": false,
+      "runtime_class_sha256": "27a79cc57d0e8b86a55f9a6bd4499cb22fafc4e77baaf8c70817abffd1f1c47e"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSDictionary$inSwiftSources$1.class": {
+      "kind": "array",
+      "candidate_sha256": "d8f5153eeffd36e14d771ae0a74be68e42596b4c07be4a4bf16f4058f06608c0",
+      "baseline_sha256": "0f0396f46c40d5d309e7e71bd697c821a46c0e4287d675b17af920198279582c",
+      "added": false,
+      "runtime_class_sha256": "deaf75fdc0abd4dff569f0c4828cb63e9cde9c6305220e6cfb91fcb9c128edb0"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSDictionary.class": {
+      "kind": "array",
+      "candidate_sha256": "0f99cdd6c24a3bb9f4ae069e58b2498815b3de70e4434cfde0424c03dd5e1176",
+      "baseline_sha256": "3f9f8340d86a89a9de806bf9b6315590402da85d1ec2ddf645067a2e6d3bb0f4",
+      "added": false,
+      "runtime_class_sha256": "7321efdc7ceb4bdbd103a51daf50b27c54478530b58cfeef9bd80bf72ef6adc1"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSSet.class": {
+      "kind": "array",
+      "candidate_sha256": "0473a4e0a6e41b7e745f1b88b714b3706e100d7475fdf79e2fd89ff33544f82b",
+      "baseline_sha256": "04bffab7e352f8734a890fef113ee6cc50e4587fa37b7342a1506dc4d75ab4ff",
+      "added": false,
+      "runtime_class_sha256": "ad0d856b51c9127341c7665ffcc36d20c274616faa57927270a63c78d8b405ce"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsObjCBridged$inKotlinSources$1.class": {
+      "kind": "array",
+      "candidate_sha256": "9bf64def8b709dd84c66f3d86bf795ca050b84003c17e5808f4abf582d677793",
+      "baseline_sha256": "f3c2e838aff886c1441366c6020c8152feedcc81e67b0f08c9b502fa422f8883",
+      "added": false,
+      "runtime_class_sha256": "2126e0928a22a894f82ce634680eb793f61999f413964f6ae96c879983e05a43"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsObjCBridged.class": {
+      "kind": "array",
+      "candidate_sha256": "991815edd8eb072c8081fb9eefd6a9e2f088ad76b60a709424424e13d18281ab",
+      "baseline_sha256": "cad477c8e0c94aaadb0d6f8bd9662252f0ba230a5434d64576c4f25d005ff136",
+      "added": false,
+      "runtime_class_sha256": "a6381bd1f16f6b7ba06f59edcc4894747414e5914d783689cd34aea2ec8a8215"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/CType$Generic.class": {
+      "kind": "array",
+      "candidate_sha256": "78862c2d4f6f06d829eb4564b920f5fe79335c58383cc8d90e41867422a54e4c",
+      "baseline_sha256": "8d2277ef5ff68573537a2e47ce8b10a299a5538c61bab4b4e82148440b2d9928",
+      "added": false,
+      "runtime_class_sha256": "08a69a89abf4e566dbb5bd2dc263f23be4bcea7fe3df4ed05daa80cda811160e"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/CType$NSObjectClass.class": {
+      "kind": "array",
+      "candidate_sha256": "f538ba0f427c7b9898d77ae19939a78009dd44f26ce51825c6fa9a704be13226",
+      "baseline_sha256": null,
+      "added": true,
+      "runtime_class_sha256": "52d584bf8387627e2ed094c410b0dd2b10fc18e48ee7521fc437e41f94206fe0"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/CType$Predefined.class": {
+      "kind": "array",
+      "candidate_sha256": "5e152d574fc3e691db2be7c949abee8931f948d8fc1eb2d9b659981d848dd858",
+      "baseline_sha256": "aee8652e6b7c1a543d7251f026e583c17599ebaeb15677bb02bde8e3b4dbd817",
+      "added": false,
+      "runtime_class_sha256": "36be50eaec6b3e7fba7302caedc445432151a1d36d8be7a40821702d71ff53fa"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/CType.class": {
+      "kind": "array",
+      "candidate_sha256": "c680d595c0d3bf702cace0df6dc4194d21239f07ff847b09608b59fc5a90e859",
+      "baseline_sha256": "4904d2e72a8b9ce20ee6b9bf89edf64efa191559b6c65abb5a18ea842443fbc5",
+      "added": false,
+      "runtime_class_sha256": "9342ef939a854ad4b75b55f5e88750c86803b11d690dfa94e3a9d6070c34ca48"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirCustomTypeTranslatorImpl.class": {
+      "kind": "array",
+      "candidate_sha256": "fc93bb1c34d92237f71671db0b148249b833f321c7ef2ccba13d2c7d06b17e7d",
+      "baseline_sha256": "3226ac365eb5d8cd0c4a442e66df8b4ed2bb0f6ef86ef352ec76b1b5038d36c2",
+      "added": false,
+      "runtime_class_sha256": "fb58ac4c319eb4a252fd684ee9adc633c993c4f4d778027f8e02a42d8b4ec2db"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridgingKt.class": {
+      "kind": "array",
+      "candidate_sha256": "f90197578ae96a0431319a0e88b0c0fceb9989a5587ba30ed9edf821cfa88764",
+      "baseline_sha256": "dcfc979466bc6ba3a8dc3581358436084b8db33dc5e440868bd26e45e8ffe571",
+      "added": false,
+      "runtime_class_sha256": "e61ea549676899eea54544a285b94edf1d79f22ca7513fa226e95f25a19c811f"
+    },
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypesKt.class": {
+      "kind": "array",
+      "candidate_sha256": "1e8b43d251e71f44a36e0538436a66538ae112f5a60298fe83bbe61ad5538272",
+      "baseline_sha256": "8d20db07bc4eb1fcc6512919a3d3860198cd621cb813c7bfaabec1c9b10dfca6",
+      "added": false,
+      "runtime_class_sha256": "db0cd462ff4625e102e63eaae9b8bc5ff7ab10d30d5be5ee22cb58f03775d10a"
     }
   },
   "resources": {
     "swift/KotlinCoroutineSupport.h": "a7aefff3c55d161918fdab28b44563a73d61e52563bb3f9ec6e5575677eb1039",
     "swift/KotlinCoroutineSupport.kt": "bd00ccad0f54f495f923c2920ccfb294457a306d6bb8c5bf849f844dd24f12fc",
     "swift/KotlinCoroutineSupport.swift": "e85cb96e0af34c25faf8bfbc46e990f353b0ada50cebc0e90e1a14131f6cdd19",
-    "swift/KotlinRuntimeSupport.kt": "91a732acb826fc148034110195654defc40155c663d17e1b5b26223c1c039c24",
-    "swift/KotlinRuntimeSupport.swift": "dbfc468afd0cbf3325e555ec2ded72f583e1fe4ac3fd690cf831ff8bf3668266"
+    "swift/KotlinRuntimeSupport.kt": "e42d6b009a268a83d484f112badb157843f7a72dcd0fecee676f8c668c59a549",
+    "swift/KotlinRuntimeSupport.swift": "6aaec25a58b2d42101dd226b26b5be035dfa00bb090433cef63230514cc2eaa3",
+    "swift/KotlinRuntimeSupport.h": "9a7c53b5f2e3dbb49fb8d7c77d8814878074b8a54bdb92f111c32f9f8c1d045d"
   },
   "native_header": {
     "relative_path": "konan/swift_export/kotlin_runtime/KotlinBase.h",
@@ -444,5 +678,7 @@
     "licenses/upstream/COPYRIGHT.txt": "8f1a1700adb5490604c6094fb137bf73f6c28d3ee554b58f3ff8ef975a79672d",
     "licenses/upstream/LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
     "licenses/upstream/NOTICE.txt": "0b09a83d3ef7795c7dec65e815866597c066c53898f2852a76599b8f5552941a"
-  }
+  },
+  "array_repair": "arrays.lock.json",
+  "array_repair_sha256": "f52509d9eb6375d19574fc0207424696274a0bbcfd7ca92b3b590c616f9430d0"
 }
