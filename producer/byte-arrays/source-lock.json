@@ -7,6 +7,6 @@
   "patch_sha256": "51e491c84dbac70d9bdf77e79ba61c194f5b31c84cc591758ce7733bcc18e923",
   "scope": "Only kotlin.ByteArray constructors; original ordinary allocation/init path and array exclusion remain unchanged",
   "allocation": "Typed Kotlin ByteArray constructor once, retained result via the existing bridge return conversion, Swift super initializer adopts that reference",
-  "next_gate": "Reproducible portable source build, Byteorder three unchanged consumer cases, exact-final CI/main and Maven verification",
+  "next_gate": "Exact-final and main CI, immutable Maven artifact verification, then independent published-input Byteorder behavior checks",
   "isolated_debug_handoff_sha256": "e14ecf8998c18d6beb5f40a277f9cc1eaca225be9c533e05a666fce0dd4d1411"
 }

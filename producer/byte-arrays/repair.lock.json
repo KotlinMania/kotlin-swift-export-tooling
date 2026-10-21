@@ -127,12 +127,12 @@
   ],
   "excluded_class_policy": "All nonselected parent entries byte-identical; candidate excluded source classes equal their baseline. No normalization waiver of inherited base register allocation differences.",
   "isolated_debug_handoff_sha256": "e14ecf8998c18d6beb5f40a277f9cc1eaca225be9c533e05a666fce0dd4d1411",
-  "release_status": "Preparation only; requires reproducibility, downstream Byteorder behavior and exact-final CI/release gates",
   "changed_excluded_classes": [
     "org/jetbrains/sir/lightclasses/nodes/SirInitFromKtSymbol.class",
     "org/jetbrains/sir/lightclasses/nodes/SirInitFromKtSymbolKt$getOuterParameterOfInnerClass$1$outType$1.class",
     "org/jetbrains/sir/lightclasses/nodes/SirInitFromKtSymbolKt$getOuterParameterOfInnerClass$1$outType$2.class",
     "org/jetbrains/sir/lightclasses/nodes/SirInitFromKtSymbolKt$getOuterParameterOfInnerClass$1$outType$3.class",
     "org/jetbrains/sir/lightclasses/nodes/SirInitFromKtSymbolKt.class"
-  ]
+  ],
+  "validation_scope": "ByteArray constructors only. Production consumers require independent behavior checks using the verified published artifact."
 }

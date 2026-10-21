@@ -701,5 +701,5 @@
   "array_repair": "arrays.lock.json",
   "array_repair_sha256": "8c0dbc3a2c9db969cf9bc325a4b4a45a72212f6a954c5330ffbb6226974f5701",
   "bytearray_repair": "producer/byte-arrays/repair.lock.json",
-  "bytearray_repair_sha256": "184e79a51729a2a4ccdb9025ea672934fea26f71d958df02b9b5f63b58368fda"
+  "bytearray_repair_sha256": "79a08b70f8dc79eb9bc5243397bff4d401513eea0833d3fba1306b1b7fcbcaf6"
 }

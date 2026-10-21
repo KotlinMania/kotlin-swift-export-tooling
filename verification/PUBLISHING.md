@@ -34,7 +34,7 @@
    key as well as the recorded checksums. Retain the public key fingerprint and
    verification result. The retrieval script checks contents/checksums and
    preserves signatures; signature presence alone is not cryptographic proof.
-7. Create the matching `v2.4.20-km.2` GitHub release at the verified main revision.
+7. Create the matching `v2.4.20-km.3` GitHub release at the verified main revision.
    `publish.yml` independently verifies the already published immutable files; it
    deliberately does not create or configure persistent access credentials.
 8. Hand the immutable Maven coordinate, six checksums, helper invocation, SDK
