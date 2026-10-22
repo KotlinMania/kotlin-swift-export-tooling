@@ -1,0 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+plugins { id 'org.jetbrains.kotlin.multiplatform' version '2.4.20' }
+repositories { mavenCentral() }
+kotlin { macosArm64(); swiftExport { moduleName = 'FoundationCollectionProof'; flattenPackage = 'foundationproof' } }
+tasks.withType(KotlinCompilationTask).configureEach { compilerOptions.allWarningsAsErrors.set(true) }

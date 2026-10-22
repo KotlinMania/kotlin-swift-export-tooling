@@ -1,0 +1,57 @@
+{
+  "base_coordinate": "io.github.kotlinmania:swift-export-embeddable:2.4.20-km.3",
+  "base_component_sha256": "13bda70f374d60f5dcccc8d14f8418fea692013d123729b96c7ebd642c4ddf2a",
+  "published_sources_sha256": "bd8657621ffbc7093e5c9b2b8f80c194a87c54cf3fe8e72da62609449cf81f0e",
+  "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "compile_sources": {
+    "TypeBridging.kt": {
+      "archive_entry": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
+      "sha256": "979791b1efb867085e28292464888450d81d728940d384647dbc56094bb58409"
+    },
+    "Types.kt": {
+      "archive_entry": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Types.kt",
+      "sha256": "eb3f90b3f1235872b1a5a815ffa152395d152ace1204dbae2e230ffc7d5c9e5d"
+    },
+    "SirSession.kt": {
+      "archive_entry": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/SirSession.kt",
+      "sha256": "217aebc0a2afe9ae831bf0160951c64867f6cc72e800a2dca7b1f7e43ec6df31"
+    },
+    "SirCustomTypeTranslatorImpl.kt": {
+      "archive_entry": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/SirCustomTypeTranslatorImpl.kt",
+      "sha256": "bb28c740377368f301837e15cdd7fa71b929ceb0fe17b14b08f0000b9ed07be1"
+    },
+    "AsStringArray.kt": {
+      "archive_entry": "producer/arrays/AsStringArray.kt",
+      "sha256": "b28dd7c1b195b0f61060e64ef7d907c30c738c4d49ee0536f8b13d25461a456a"
+    },
+    "AsStringArrayObjC.kt": {
+      "archive_entry": "producer/arrays/AsStringArrayObjC.kt",
+      "sha256": "2b4736d32c90c20c1d2ef701ea587ad811a87af267f808c2ae5e3ad53dcd2125"
+    }
+  },
+  "patch": "producer/collections/TypeBridging.kt.patch",
+  "patch_sha256": "653ba80950d0f9e50ce38c769f1775ff4ea383615cbd95431d6ba3e206c4d9a5",
+  "candidate_source_sha256": "82ea975fb2948ab0aaffa6def7de064dd3710c100868121d50c83335cbeedbf2",
+  "scope": "Recursive exact String/List/String-keyed-Map Foundation import identity; Native carrier and nonidentity conversions retained.",
+  "native_swift_execution": {
+    "source_head": "f304ad3a12de1c457674d12b1b06731e4752daed",
+    "tests": 11,
+    "receipt_sha256": "4d8081697651950c1f5f9993cace262187b64526b46065bab56e5b83ae4c1d84",
+    "qualification": "Original post-runtime checker failure retained; independent offline verification; not Wiremock acceptance"
+  },
+  "class_modules": {
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray.class": "org.jetbrains.kotlin_sir-providers",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection$InSwiftSources.class": "org.jetbrains.kotlin:sir-providers",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection.class": "org.jetbrains.kotlin_sir-providers",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSDictionary.class": "org.jetbrains.kotlin_sir-providers",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsContravariantBlock$inSwiftSources$1.class": "org.jetbrains.kotlin_sir-providers"
+  },
+  "callback_context": "Preserve the prior checked dictionary/list conversion for explicitly erased Any/Any? implementation parameters; no public API erasure added.",
+  "selected_non_debug_sha256": {
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsContravariantBlock$inSwiftSources$1.class": "09d8648245903be0b0505c93cd476025f8df1c2a462204faab1f6c9d15a9eb91",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray.class": "245a121f0b9679d4e4df6e537d867d1886ff974d895913beea7016882f5c0267",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection$InSwiftSources.class": "cf2c494cd3b70813b3c5d0729850998b958b85f26329f438b2edb624f842edb0",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection.class": "ec3c25feefb50b6cd29114520a7c501846a11a35b8574390d29aa19ce99c6b39",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSDictionary.class": "9829ba41cb3504abb3f060759e2aaac89fb42c5e9d8394a1d568b609a15733a7"
+  }
+}

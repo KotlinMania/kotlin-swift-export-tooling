@@ -1,5 +1,5 @@
 {
-  "version": "2.4.20-km.3",
+  "version": "2.4.20-km.4",
   "group": "io.github.kotlinmania",
   "artifact": "swift-export-embeddable",
   "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
@@ -106,7 +106,7 @@
       "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
       "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
       "baseline_sha256": "7ae7399f7359e7661695beec2239b21b13b277e7ebe67740fb65e2a3293246ef",
-      "candidate_sha256": "979791b1efb867085e28292464888450d81d728940d384647dbc56094bb58409",
+      "candidate_sha256": "82ea975fb2948ab0aaffa6def7de064dd3710c100868121d50c83335cbeedbf2",
       "patch": "patches/arrays/TypeBridging.kt.patch",
       "patch_sha256": "665388e95c42c094bf703ebc88041cd3de76a0f6a4ad4bd5cc2ca9743537f7c9",
       "kind": "array"
@@ -387,6 +387,26 @@
       "scope": "bytearray-base",
       "sha256": "5a0f81f2628c407f1551e35dc6e58f65b10cd09406f9f19d4afa6f672ec5ccf4",
       "url": "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.2/swift-export-embeddable-2.4.20-km.2.jar"
+    },
+    {
+      "name": "swift-export-embeddable-2.4.20-km.3.jar",
+      "group": "io.github.kotlinmania",
+      "artifact": "swift-export-embeddable",
+      "version": "2.4.20-km.3",
+      "scope": "parent-component",
+      "classifier": "",
+      "url": "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.3/swift-export-embeddable-2.4.20-km.3.jar",
+      "sha256": "13bda70f374d60f5dcccc8d14f8418fea692013d123729b96c7ebd642c4ddf2a"
+    },
+    {
+      "name": "swift-export-embeddable-2.4.20-km.3-sources.jar",
+      "group": "io.github.kotlinmania",
+      "artifact": "swift-export-embeddable",
+      "version": "2.4.20-km.3",
+      "scope": "parent-sources",
+      "classifier": "sources",
+      "url": "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.3/swift-export-embeddable-2.4.20-km.3-sources.jar",
+      "sha256": "bd8657621ffbc7093e5c9b2b8f80c194a87c54cf3fe8e72da62609449cf81f0e"
     }
   ],
   "selected_classes": {
@@ -701,5 +721,7 @@
   "array_repair": "arrays.lock.json",
   "array_repair_sha256": "8c0dbc3a2c9db969cf9bc325a4b4a45a72212f6a954c5330ffbb6226974f5701",
   "bytearray_repair": "producer/byte-arrays/repair.lock.json",
-  "bytearray_repair_sha256": "79a08b70f8dc79eb9bc5243397bff4d401513eea0833d3fba1306b1b7fcbcaf6"
+  "bytearray_repair_sha256": "79a08b70f8dc79eb9bc5243397bff4d401513eea0833d3fba1306b1b7fcbcaf6",
+  "collection_repair": "producer/collections/source-lock.json",
+  "collection_repair_sha256": "9ac36d237c4fecd0d5bfd24654db69c8f833a4a49e3c22659d4e4ea80a7cf8b9"
 }

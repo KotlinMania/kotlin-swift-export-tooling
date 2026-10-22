@@ -1,0 +1,56 @@
+--- a/TypeBridging.kt
++++ b/TypeBridging.kt
+@@ -707,6 +707,12 @@
+         swiftType: SirNominalType,
+         cType: CType,
+     ) : AsObjCBridged(swiftType, cType) {
++        protected open val preservesImportedValue: Boolean get() = false
++
++        protected fun preservesFoundationImport(bridge: BidirectionalBridge): Boolean =
++            (bridge.swiftType == SirNominalType(SirSwiftModule.string) && bridge.cType == CType.NSString) ||
++                    (bridge is AsNSCollection && !bridge.requiresNativeCarrier && bridge.preservesImportedValue)
++
+         override fun kotlinReverseParameterTypeFqName(typeNamer: SirTypeNamer): String =
+             if (requiresNativeCarrier) nativeValueType(typeNamer) else super.kotlinReverseParameterTypeFqName(typeNamer)
+         abstract inner class InSwiftSources : ValueConversion {
+@@ -715,12 +721,14 @@
+ 
+             context(session: SirSession)
+             override fun kotlinToSwift(typeNamer: SirTypeNamer, valueExpression: String): String {
++                if (preservesImportedValue) return valueExpression
+                 return "$valueExpression as! ${typeNamer.swiftFqName(swiftType)}"
+             }
+         }
+     }
+ 
+     open class AsNSArray(swiftType: SirNominalType, private val elementBridge: BidirectionalBridge) : AsNSCollection(swiftType, CType.NSArray(elementBridge.cType)) {
++        override val preservesImportedValue: Boolean get() = !requiresNativeCarrier && preservesFoundationImport(elementBridge)
+         override val requiresNativeCarrier: Boolean get() = elementBridge.hasNativeCarrier()
+         override val objcFoundationClass: String get() = "NSArray"
+         override fun nativeValueType(typeNamer: SirTypeNamer): String = "kotlin.collections.List<${elementBridge.collectionValueType(typeNamer)}>"
+@@ -834,6 +842,9 @@
+ 
+     class AsNSDictionary(swiftType: SirNominalType, private val keyBridge: BidirectionalBridge, private val valueBridge: BidirectionalBridge) :
+         AsNSCollection(swiftType, CType.NSDictionary(keyBridge.cType, valueBridge.cType)) {
++        override val preservesImportedValue: Boolean get() =
++            !requiresNativeCarrier && keyBridge.swiftType == SirNominalType(SirSwiftModule.string) &&
++                    keyBridge.cType == CType.NSString && preservesFoundationImport(valueBridge)
+         override val requiresNativeCarrier: Boolean get() = keyBridge.hasNativeCarrier() || valueBridge.hasNativeCarrier()
+         override val objcFoundationClass: String get() = "NSDictionary"
+         override fun nativeValueType(typeNamer: SirTypeNamer): String = "kotlin.collections.Map<${keyBridge.collectionValueType(typeNamer)}, ${valueBridge.collectionValueType(typeNamer)}>"
+@@ -1143,7 +1154,14 @@
+                 } ?: ""
+                 val mappedArgs = allArgs.takeIf { it.isNotEmpty() }?.joinToString(separator = "\n", postfix = "\n") { [name, bridge] ->
+                     val fqName = typeNamer.swiftFqName(bridge.swiftType)
+-                    "let _$name: $fqName = ${bridge.inSwiftSources.kotlinToSwift(typeNamer, name)}"
++                    val converted = bridge.inSwiftSources.kotlinToSwift(typeNamer, name)
++                    val collection = bridge is AsNSCollection ||
++                            (bridge is AsOptionalWrapper && bridge.wrappedObject is AsNSCollection)
++                    val inputType = bridge.cType.toSwiftTypeName()
++                    val expression = if (collection && converted == name && (inputType == "Any" || inputType == "Any?")) {
++                        "$name as! $fqName"
++                    } else converted
++                    "let _$name: $fqName = $expression"
+                 } ?: ""
+                 val callAsyncArgs = asyncArgs?.map { [name, _] -> "_$name" }
+                 val callContextArg = contextArgs.takeIf {
