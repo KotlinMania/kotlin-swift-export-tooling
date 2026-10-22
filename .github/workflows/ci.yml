@@ -9,11 +9,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v6.0.1
+      - uses: actions/setup-java@v6.1.0
         with:
           distribution: zulu
           java-version: '25'
-      - uses: gradle/actions/setup-gradle@v6.3.0
+      - uses: gradle/actions/setup-gradle@v6.4.0
         with:
           gradle-version: '9.8.2'
       - name: Print toolchain
@@ -47,7 +47,7 @@ jobs:
           repository: KotlinMania/proc-macro2-kotlin
           ref: 3d8718c2412be6aa99175ab88663edec8dbfa6db
           path: build/consumer-source
-      - uses: actions/setup-java@v6.0.1
+      - uses: actions/setup-java@v6.1.0
         with:
           distribution: zulu
           java-version: '21'
