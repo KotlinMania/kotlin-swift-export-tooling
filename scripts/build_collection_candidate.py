@@ -11,11 +11,7 @@ import zipfile
 from build import REPO, check, digest, normalize_source, run, write_json
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    for name in ['output', 'cache', 'component', 'sources']:
-        parser.add_argument('--' + name, type=Path, required=True)
-    args = parser.parse_args()
+def build_candidate(args):
     root = args.output.resolve()
     check(not root.exists(), 'New output required')
     root.mkdir(parents=True)
@@ -178,6 +174,8 @@ def main():
          '--worker', str(root / 'worker.json'), '--entries', str(root / 'closure-entries.json'),
          '--jdk', java_home, '--output', str(root / 'reference-closure.json')], root / 'reference-closure.log', env)
     verify()
+    candidate_attributes = {entry: digest((root / ('candidate-' + module_by_class[entry] + '-canonical') / entry).read_bytes()) for entry in changed}
+    check(candidate_attributes == repair['selected_non_debug_sha256'], 'Reviewed collection attributes changed')
     write_json(root / 'verified-host-result.json', {
         'host_source_class_audit_passed': True, 'native_or_swift_behavior_executed': False,
         'component': str(result), 'sha256': digest(result.read_bytes()), 'changed_classes': changed,
@@ -192,4 +190,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in ['output', 'cache', 'component', 'sources']:
+        parser.add_argument('--' + name, type=Path, required=True)
+    build_candidate(parser.parse_args())

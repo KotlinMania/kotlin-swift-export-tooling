@@ -65,3 +65,25 @@ This is isolated fixture evidence. It does not establish Wiremock product
 acceptance, publication, all-module Swift 6, arbitrary generic relationships,
 malformed foreign-input behavior or concurrent access safety. The published
 km.3 artifacts and SDK header contract remain unchanged.
+
+## Reproducible release candidate
+
+The km.4 layer builds over the immutable km.3 binary and complete sources,
+retaining the selected classes' exact module identities. JDK 25.0.4 and
+OpenJDK 21.0.12.1 builds produced identical components, SHA256
+`4240be980f3a94bbb250bcf34d73a9b9585d73296edf09fe42bdf494377b0310`.
+All six Maven artifact pairs matched byte-for-byte. Distribution verification
+checked Apache licensing, notices, complete source and helper contents, and the
+absence of bundled Rust source and Native SDK binaries. The typed class payload
+is byte-identical to the executed diagnostic; release provenance metadata is an
+explicit additional archive delta.
+
+Gradle's actual `verifyWorkerPom` resolved the staged candidate POM and verified
+all sixteen worker identities and hashes. Six helper regression tests passed.
+The first Gradle metadata startup was denied its local locking socket by the
+sandbox before any task ran; the separately logged permitted execution passed.
+This is staged publisher validation, not independent public Maven retrieval.
+
+The release workflow retains existing Native/Swift regressions and adds the
+eleven collection cases. Exact-final PR CI, exact-main CI, immutable publication
+and independent public Maven verification are separate release gates.

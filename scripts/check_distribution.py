@@ -37,6 +37,8 @@ def validate(directory, comparison=None):
                     expected_helper.add(lock['array_repair'])
                 if 'bytearray_repair' in lock:
                     expected_helper.add(lock['bytearray_repair'])
+                if 'collection_repair' in lock:
+                    expected_helper.add(lock['collection_repair'])
                 assert set(names) == expected_helper
                 assert 'scripts/prepare_native_sdk.py' in names and 'patches/KotlinBase.h.patch' in names
                 assert not any(n.endswith('.class') for n in names)
