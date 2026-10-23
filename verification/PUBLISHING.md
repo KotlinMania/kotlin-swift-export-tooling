@@ -47,14 +47,17 @@
 
 ## Local validation install (not a publication)
 
-`python3 scripts/publish_local.py --distribution build/distribution-a`
-(or `./gradlew publishToMavenLocal -PdistributionDirectory=build/distribution-a`)
+`./gradlew publishToMavenLocal -PdistributionDirectory=build/distribution-a`
 installs the six verified artifacts into a local Maven repository, defaulting to
-`~/.m2/repository`, after re-checking every byte against the frozen
-`verification/release-artifacts.json` fingerprints. It writes standard Maven
-checksums, never overwrites a previous install without `--replace`, and accepts
-an isolated absolute `--repository` path (Gradle's `mavenLocal()` follows the
-`maven.repo.local` system property, restricted to `io.github.kotlinmania`).
+`~/.m2/repository`, after re-checking the distribution inside the Gradle task:
+the receipt against the frozen `verification/release-artifacts.json`
+fingerprints, every file byte-for-byte by checksum, and the POM identity.
+The deep archive and licensing audits remain in the Python release pipeline
+(`scripts/check_distribution.py`); the frozen fingerprints are only written
+after those pass. It writes standard Maven checksums, never overwrites a previous install without
+`-PmavenLocalReplace=true`, and accepts an isolated absolute
+`-PmavenLocalRepository` folder path, consumed restricted to
+`io.github.kotlinmania`.
 This exists only for consumer validation of the exact release bytes; it is not
 a publication, produces no release evidence, and never replaces step 4 above
 or the independent Central retrieval checks.

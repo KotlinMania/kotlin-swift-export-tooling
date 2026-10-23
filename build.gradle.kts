@@ -61,28 +61,72 @@ tasks.register("verifyWorkerPom") {
     }
 }
 
-tasks.register<Exec>("publishToMavenLocal") {
+fun digest(algorithm: String, bytes: ByteArray): String =
+    MessageDigest.getInstance(algorithm).digest(bytes).joinToString("") { "%02x".format(it) }
+
+tasks.register("publishToMavenLocal") {
     group = "publishing"
     description = "Installs the verified distribution into a local Maven repository for consumer validation only."
-    val repository = providers.gradleProperty("mavenLocalRepository")
-        .map { file(it) }
-        .getOrElse(file(System.getProperty("user.home") + "/.m2/repository"))
-    commandLine(
-        "python3", "scripts/publish_local.py",
-        "--distribution", distributionDirectory.absolutePath,
-        "--repository", repository.absolutePath,
-    )
-    if (providers.gradleProperty("mavenLocalReplace").map { it.toBooleanStrict() }.getOrElse(false)) {
-        args("--replace")
-    }
-    isIgnoreExitValue = false
-    doFirst {
-        require(distributionDirectory.resolve("distribution.json").isFile) {
+    doLast {
+        val receiptFile = distributionDirectory.resolve("distribution.json")
+        require(receiptFile.isFile) {
             "No verified distribution at ${distributionDirectory.absolutePath}. Produce one first " +
                 "(python3 scripts/build.py --output build/reproduction-a --cache build/inputs, then " +
                 "python3 scripts/distribution.py --build build/reproduction-a --output build/distribution-a), " +
                 "or pass -PdistributionDirectory pointing at a verified distribution; see verification/PUBLISHING.md."
         }
+        val lock = JsonSlurper().parse(file("inputs.lock.json")) as Map<*, *>
+        val frozen = JsonSlurper().parse(file("verification/release-artifacts.json")) as Map<*, *>
+        val receipt = JsonSlurper().parse(receiptFile) as Map<*, *>
+        require(receipt == frozen) { "Distribution differs from the frozen real-consumer candidate" }
+        val files = frozen["files"] as Map<*, *>
+        val names = files.keys.map { it.toString() }
+        for (name in names) {
+            val path = distributionDirectory.resolve(name)
+            require(path.isFile) { "Missing distribution file: $name" }
+            require(digest("SHA-256", path.readBytes()) == files[name].toString()) { "Checksum differs: $name" }
+        }
+        val pomName = names.single { it.endsWith(".pom") }
+        val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+        factory.isNamespaceAware = true
+        val project = factory.newDocumentBuilder().parse(distributionDirectory.resolve(pomName)).documentElement
+        fun childText(parent: org.w3c.dom.Element, tag: String): String? {
+            val children = parent.childNodes
+            for (index in 0 until children.length) {
+                val node = children.item(index)
+                if (node.nodeType == org.w3c.dom.Node.ELEMENT_NODE && node.localName == tag) {
+                    return node.textContent.trim()
+                }
+            }
+            return null
+        }
+        val licenses = project.getElementsByTagName("licenses").item(0) as org.w3c.dom.Element
+        val license = licenses.getElementsByTagName("license").item(0) as org.w3c.dom.Element
+        require(childText(project, "groupId") == "io.github.kotlinmania") { "POM group differs" }
+        require(childText(project, "version") == lock["version"].toString()) { "POM version differs" }
+        require(childText(license, "name") == "Apache License, Version 2.0") { "POM license differs" }
+        val repository = providers.gradleProperty("mavenLocalRepository")
+            .map { file(it) }
+            .getOrElse(file(System.getProperty("user.home") + "/.m2/repository"))
+        require(repository.isAbsolute) { "mavenLocalRepository must be an absolute path" }
+        val replace = providers.gradleProperty("mavenLocalReplace").map { it.toBooleanStrict() }.getOrElse(false)
+        val target = repository.resolve(lock["group"].toString().replace('.', '/'))
+            .resolve(lock["artifact"].toString()).resolve(lock["version"].toString())
+        val existing = names.filter { target.resolve(it).isFile }
+        require(existing.isEmpty() || replace) {
+            "Already installed: ${existing.sorted().joinToString()} (pass -PmavenLocalReplace=true to overwrite a local validation install)"
+        }
+        target.mkdirs()
+        for (artifact in names) {
+            val destination = target.resolve(artifact)
+            distributionDirectory.resolve(artifact).copyTo(destination, overwrite = replace)
+            for (algorithm in listOf("md5", "sha1", "sha256", "sha512")) {
+                destination.resolveSibling(destination.name + "." + algorithm)
+                    .writeText(digest(algorithm, destination.readBytes()))
+            }
+        }
+        logger.lifecycle("Installed ${names.size} verified artifacts to $target")
+        logger.lifecycle("Local validation only; never substitute this install for the published immutable release.")
     }
 }
 

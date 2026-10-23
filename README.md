@@ -37,12 +37,22 @@ Use an Xcode configuration with `SWIFT_VERSION = 5`, `SWIFT_TREAT_WARNINGS_AS_ER
 A local Maven install exists only so a consumer can exercise the exact verified release bytes through normal dependency resolution before adoption, mirroring the serde-kotlin local-validation flow. It is never a publication and never substitutes the published immutable release. It needs a verified distribution directory first — from CI or a local reproducible build (Reproducibility and [PUBLISHING](verification/PUBLISHING.md)):
 
 ```sh
-python3 scripts/publish_local.py --distribution build/distribution-a
-# or through the build:
 ./gradlew publishToMavenLocal -PdistributionDirectory=build/distribution-a
 ```
 
-The install validates the distribution against the frozen `verification/release-artifacts.json` fingerprints first and refuses unverified bytes. It installs all six artifacts with standard Maven checksums into `~/.m2/repository` by default; pass `--repository /absolute/path/to/an/isolated/repository` (or `-PmavenLocalRepository=...`) to keep the default repository clean, and consume it with Gradle's `mavenLocal()` under the `maven.repo.local` system property restricted to `io.github.kotlinmania`, as serde-kotlin's validation consumers do. A previous local install is never silently overwritten; pass `--replace` (or `-PmavenLocalReplace=true`) to redo a validation install. Adoption decisions still require the independently published and verified Central release.
+The Gradle task checks the distribution receipt against the frozen `verification/release-artifacts.json` fingerprints and verifies every file byte-for-byte by checksum, plus POM identity; the fingerprints were frozen only after the deep archive and licensing audits passed, so unverified bytes are refused. The bytes are copied verbatim rather than republished through `maven-publish`, because the frozen POM is itself a verified release byte carrying the worker dependency closure. It installs all six artifacts with standard Maven checksums into `~/.m2/repository` by default; pass `-PmavenLocalRepository=/absolute/path/to/an/isolated/repository` to keep the default repository clean, and consume that folder repository restricted to `io.github.kotlinmania`, as serde-kotlin's validation consumers do:
+
+```kotlin
+repositories {
+    exclusiveContent {
+        forRepository { maven { url = uri("file:///absolute/path/to/the/isolated/repository") } }
+        filter { includeGroup("io.github.kotlinmania") }
+    }
+    mavenCentral()
+}
+```
+
+A previous local install is never silently overwritten; pass `-PmavenLocalReplace=true` to redo a validation install. Adoption decisions still require the independently published and verified Central release.
 
 ### Separate Native SDK header
 
