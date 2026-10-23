@@ -34,7 +34,7 @@ Use an Xcode configuration with `SWIFT_VERSION = 5`, `SWIFT_TREAT_WARNINGS_AS_ER
 
 ### Local validation install
 
-A local Maven install exists only so a consumer can exercise the exact verified release bytes through normal dependency resolution before adoption, mirroring the serde-kotlin local-validation flow. It is never a publication and never substitutes the published immutable release:
+A local Maven install exists only so a consumer can exercise the exact verified release bytes through normal dependency resolution before adoption, mirroring the serde-kotlin local-validation flow. It is never a publication and never substitutes the published immutable release. It needs a verified distribution directory first — from CI or a local reproducible build (Reproducibility and [PUBLISHING](verification/PUBLISHING.md)):
 
 ```sh
 python3 scripts/publish_local.py --distribution build/distribution-a

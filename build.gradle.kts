@@ -76,6 +76,14 @@ tasks.register<Exec>("publishToMavenLocal") {
         args("--replace")
     }
     isIgnoreExitValue = false
+    doFirst {
+        require(distributionDirectory.resolve("distribution.json").isFile) {
+            "No verified distribution at ${distributionDirectory.absolutePath}. Produce one first " +
+                "(python3 scripts/build.py --output build/reproduction-a --cache build/inputs, then " +
+                "python3 scripts/distribution.py --build build/reproduction-a --output build/distribution-a), " +
+                "or pass -PdistributionDirectory pointing at a verified distribution; see verification/PUBLISHING.md."
+        }
+    }
 }
 
 signing {
