@@ -4,9 +4,13 @@ import java.security.MessageDigest
 import org.gradle.api.attributes.Bundling
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.tasks.AbstractPublishToMaven
+import org.gradle.api.publish.maven.tasks.GenerateMavenPom
 
 plugins {
     base
+    `maven-publish`
     signing
 }
 
@@ -64,9 +68,10 @@ tasks.register("verifyWorkerPom") {
 fun digest(algorithm: String, bytes: ByteArray): String =
     MessageDigest.getInstance(algorithm).digest(bytes).joinToString("") { "%02x".format(it) }
 
-tasks.register("publishToMavenLocal") {
-    group = "publishing"
-    description = "Installs the verified distribution into a local Maven repository for consumer validation only."
+val distributionPrefix = "swift-export-embeddable-${project.version}"
+
+val verifyDistribution = tasks.register("verifyDistribution") {
+    description = "Verifies the distribution receipt, every release byte and the POM identity against the frozen fingerprints."
     doLast {
         val receiptFile = distributionDirectory.resolve("distribution.json")
         require(receiptFile.isFile) {
@@ -105,29 +110,45 @@ tasks.register("publishToMavenLocal") {
         require(childText(project, "groupId") == "io.github.kotlinmania") { "POM group differs" }
         require(childText(project, "version") == lock["version"].toString()) { "POM version differs" }
         require(childText(license, "name") == "Apache License, Version 2.0") { "POM license differs" }
-        val repository = providers.gradleProperty("mavenLocalRepository")
-            .map { file(it) }
-            .getOrElse(file(System.getProperty("user.home") + "/.m2/repository"))
-        require(repository.isAbsolute) { "mavenLocalRepository must be an absolute path" }
-        val replace = providers.gradleProperty("mavenLocalReplace").map { it.toBooleanStrict() }.getOrElse(false)
-        val target = repository.resolve(lock["group"].toString().replace('.', '/'))
-            .resolve(lock["artifact"].toString()).resolve(lock["version"].toString())
-        val existing = names.filter { target.resolve(it).isFile }
-        require(existing.isEmpty() || replace) {
-            "Already installed: ${existing.sorted().joinToString()} (pass -PmavenLocalReplace=true to overwrite a local validation install)"
-        }
-        target.mkdirs()
-        for (artifact in names) {
-            val destination = target.resolve(artifact)
-            distributionDirectory.resolve(artifact).copyTo(destination, overwrite = replace)
-            for (algorithm in listOf("md5", "sha1", "sha256", "sha512")) {
-                destination.resolveSibling(destination.name + "." + algorithm)
-                    .writeText(digest(algorithm, destination.readBytes()))
+        logger.lifecycle("Verified ${names.size} distribution files against the frozen release fingerprints")
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("swiftExportEmbeddable") {
+            groupId = project.group.toString()
+            artifactId = "swift-export-embeddable"
+            version = project.version.toString()
+            artifact(distributionDirectory.resolve("$distributionPrefix.jar"))
+            artifact(distributionDirectory.resolve("$distributionPrefix-sources.jar")) { classifier = "sources" }
+            artifact(distributionDirectory.resolve("$distributionPrefix-javadoc.jar")) { classifier = "javadoc" }
+            artifact(distributionDirectory.resolve("$distributionPrefix-native-sdk-helper.zip")) {
+                classifier = "native-sdk-helper"
+                extension = "zip"
+            }
+            artifact(distributionDirectory.resolve("$distributionPrefix-sbom.json")) {
+                classifier = "sbom"
+                extension = "json"
             }
         }
-        logger.lifecycle("Installed ${names.size} verified artifacts to $target")
-        logger.lifecycle("Local validation only; never substitute this install for the published immutable release.")
     }
+}
+
+// The publication's generated POM is replaced with the frozen verified POM bytes
+// so a local install is byte-identical to the audited release; the sha256 gate
+// runs first so the copied bytes are the verified bytes.
+tasks.withType<GenerateMavenPom>().configureEach {
+    dependsOn(verifyDistribution)
+    outputs.upToDateWhen { false }
+    doLast {
+        val pom = distributionDirectory.listFiles { candidate -> candidate.name.endsWith(".pom") }!!.single()
+        destination.writeBytes(pom.readBytes())
+    }
+}
+
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    dependsOn(verifyDistribution)
 }
 
 signing {

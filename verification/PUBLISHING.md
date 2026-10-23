@@ -44,20 +44,21 @@
    ProcMacro2 three-case regression remains required by this tooling's CI.
    Neither consumer acceptance nor broader selection follows automatically
    from the producer fixtures.
-
 ## Local validation install (not a publication)
 
 `./gradlew publishToMavenLocal -PdistributionDirectory=build/distribution-a`
-installs the six verified artifacts into a local Maven repository, defaulting to
-`~/.m2/repository`, after re-checking the distribution inside the Gradle task:
-the receipt against the frozen `verification/release-artifacts.json`
-fingerprints, every file byte-for-byte by checksum, and the POM identity.
-The deep archive and licensing audits remain in the Python release pipeline
-(`scripts/check_distribution.py`); the frozen fingerprints are only written
-after those pass. It writes standard Maven checksums, never overwrites a previous install without
-`-PmavenLocalReplace=true`, and accepts an isolated absolute
-`-PmavenLocalRepository` folder path, consumed restricted to
-`io.github.kotlinmania`.
-This exists only for consumer validation of the exact release bytes; it is not
-a publication, produces no release evidence, and never replaces step 4 above
-or the independent Central retrieval checks.
+uses the standard `maven-publish` flow (as serde-kotlin) to install the six
+verified artifacts into the local Maven
+repository — default `~/.m2/repository`, or an isolated absolute path via
+`-Dmaven.repo.local`. A `verifyDistribution` gate runs first: the receipt
+against the frozen `verification/release-artifacts.json` fingerprints, every
+file byte-for-byte by checksum, and the POM identity; the deep archive and
+licensing audits remain in the Python release pipeline
+(`scripts/check_distribution.py`), and the frozen fingerprints are only
+written after those pass. The generated POM is replaced with the frozen
+verified POM bytes so the install is byte-identical to the audited release.
+Consumers resolve the local repository restricted to `io.github.kotlinmania`
+(`mavenLocal()` under the same `maven.repo.local` path). This exists only for
+consumer validation of the exact release bytes; it is not a publication,
+produces no release evidence, and never replaces step 4 above or the
+independent Central retrieval checks.
