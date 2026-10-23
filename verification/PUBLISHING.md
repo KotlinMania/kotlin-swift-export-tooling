@@ -44,3 +44,17 @@
    ProcMacro2 three-case regression remains required by this tooling's CI.
    Neither consumer acceptance nor broader selection follows automatically
    from the producer fixtures.
+
+## Local validation install (not a publication)
+
+`python3 scripts/publish_local.py --distribution build/distribution-a`
+(or `./gradlew publishToMavenLocal -PdistributionDirectory=build/distribution-a`)
+installs the six verified artifacts into a local Maven repository, defaulting to
+`~/.m2/repository`, after re-checking every byte against the frozen
+`verification/release-artifacts.json` fingerprints. It writes standard Maven
+checksums, never overwrites a previous install without `--replace`, and accepts
+an isolated absolute `--repository` path (Gradle's `mavenLocal()` follows the
+`maven.repo.local` system property, restricted to `io.github.kotlinmania`).
+This exists only for consumer validation of the exact release bytes; it is not
+a publication, produces no release evidence, and never replaces step 4 above
+or the independent Central retrieval checks.
