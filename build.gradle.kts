@@ -61,6 +61,23 @@ tasks.register("verifyWorkerPom") {
     }
 }
 
+tasks.register<Exec>("publishToMavenLocal") {
+    group = "publishing"
+    description = "Installs the verified distribution into a local Maven repository for consumer validation only."
+    val repository = providers.gradleProperty("mavenLocalRepository")
+        .map { file(it) }
+        .getOrElse(file(System.getProperty("user.home") + "/.m2/repository"))
+    commandLine(
+        "python3", "scripts/publish_local.py",
+        "--distribution", distributionDirectory.absolutePath,
+        "--repository", repository.absolutePath,
+    )
+    if (providers.gradleProperty("mavenLocalReplace").map { it.toBooleanStrict() }.getOrElse(false)) {
+        args("--replace")
+    }
+    isIgnoreExitValue = false
+}
+
 signing {
     val key = providers.environmentVariable("SIGNING_KEY").orNull
     if (key != null) {

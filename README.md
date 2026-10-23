@@ -32,6 +32,18 @@ Replace the existing official exporter provider rather than adding a second one.
 
 Use an Xcode configuration with `SWIFT_VERSION = 5`, `SWIFT_TREAT_WARNINGS_AS_ERRORS = YES` and `GCC_TREAT_WARNINGS_AS_ERRORS = YES` for generated dependencies. Keep the authored Swift package/test target explicitly in mode 6. Do not apply a global `-swift-version 6` argument to every dependency. Repository policies that force all generated targets to mode 6 need an explicit reviewed configuration change; this is not permission to delete arbitrary Gradle actions or edit generated APIs.
 
+### Local validation install
+
+A local Maven install exists only so a consumer can exercise the exact verified release bytes through normal dependency resolution before adoption, mirroring the serde-kotlin local-validation flow. It is never a publication and never substitutes the published immutable release:
+
+```sh
+python3 scripts/publish_local.py --distribution build/distribution-a
+# or through the build:
+./gradlew publishToMavenLocal -PdistributionDirectory=build/distribution-a
+```
+
+The install validates the distribution against the frozen `verification/release-artifacts.json` fingerprints first and refuses unverified bytes. It installs all six artifacts with standard Maven checksums into `~/.m2/repository` by default; pass `--repository /absolute/path/to/an/isolated/repository` (or `-PmavenLocalRepository=...`) to keep the default repository clean, and consume it with Gradle's `mavenLocal()` under the `maven.repo.local` system property restricted to `io.github.kotlinmania`, as serde-kotlin's validation consumers do. A previous local install is never silently overwritten; pass `--replace` (or `-PmavenLocalReplace=true`) to redo a validation install. Adoption decisions still require the independently published and verified Central release.
+
 ### Separate Native SDK header
 
 The exporter alone is insufficient: the matching Native SDK needs the reviewed retained-return declaration. Resolve the `native-sdk-helper` ZIP classifier of the same coordinate using normal dependency resolution, verify its checksum, then extract it into an owned project build directory. The helper contains Python source, a header patch, locked input metadata and licenses; it does not contain an SDK or Native binaries.
