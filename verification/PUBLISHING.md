@@ -50,7 +50,10 @@
 uses the standard `maven-publish` flow (as serde-kotlin) to install the six
 verified artifacts into the local Maven
 repository — default `~/.m2/repository`, or an isolated absolute path via
-`-Dmaven.repo.local`. A `verifyDistribution` gate runs first: the receipt
+`-Dmaven.repo.local`. When no local distribution exists, the build first
+retrieves the published release artifacts from Maven Central and verifies
+each byte against the same frozen fingerprints, so the bare command works
+without a local reproduction. A `verifyDistribution` gate then runs: the receipt
 against the frozen `verification/release-artifacts.json` fingerprints, every
 file byte-for-byte by checksum, and the POM identity; the deep archive and
 licensing audits remain in the Python release pipeline

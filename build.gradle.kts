@@ -70,8 +70,36 @@ fun digest(algorithm: String, bytes: ByteArray): String =
 
 val distributionPrefix = "swift-export-embeddable-${project.version}"
 
+val inputsLockFile = file("inputs.lock.json")
+val frozenReceiptFile = file("verification/release-artifacts.json")
+val releaseVersion = project.version.toString()
+
+val retrieveDistribution = tasks.register("retrieveDistribution") {
+    description = "Retrieves the published release artifacts from Maven Central and verifies them against the frozen fingerprints when no local distribution exists."
+    onlyIf { !distributionDirectory.resolve("distribution.json").isFile }
+    doLast {
+        val frozen = JsonSlurper().parse(frozenReceiptFile) as Map<*, *>
+        val files = frozen["files"] as Map<*, *>
+        distributionDirectory.mkdirs()
+        for ((rawName, rawHash) in files) {
+            val name = rawName.toString()
+            val connection = java.net.URI(
+                "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/$releaseVersion/$name"
+            ).toURL().openConnection()
+            connection.connectTimeout = 30_000
+            connection.readTimeout = 30_000
+            val bytes = connection.getInputStream().use { it.readBytes() }
+            require(digest("SHA-256", bytes) == rawHash.toString()) { "Retrieved artifact differs from the frozen fingerprint: $name" }
+            distributionDirectory.resolve(name).writeBytes(bytes)
+        }
+        distributionDirectory.resolve("distribution.json").writeText(frozenReceiptFile.readText())
+        logger.lifecycle("Retrieved and verified ${files.size} published release artifacts into ${distributionDirectory.absolutePath}")
+    }
+}
+
 val verifyDistribution = tasks.register("verifyDistribution") {
     description = "Verifies the distribution receipt, every release byte and the POM identity against the frozen fingerprints."
+    dependsOn(retrieveDistribution)
     doLast {
         val receiptFile = distributionDirectory.resolve("distribution.json")
         require(receiptFile.isFile) {
@@ -80,8 +108,8 @@ val verifyDistribution = tasks.register("verifyDistribution") {
                 "python3 scripts/distribution.py --build build/reproduction-a --output build/distribution-a), " +
                 "or pass -PdistributionDirectory pointing at a verified distribution; see verification/PUBLISHING.md."
         }
-        val lock = JsonSlurper().parse(file("inputs.lock.json")) as Map<*, *>
-        val frozen = JsonSlurper().parse(file("verification/release-artifacts.json")) as Map<*, *>
+        val lock = JsonSlurper().parse(inputsLockFile) as Map<*, *>
+        val frozen = JsonSlurper().parse(frozenReceiptFile) as Map<*, *>
         val receipt = JsonSlurper().parse(receiptFile) as Map<*, *>
         require(receipt == frozen) { "Distribution differs from the frozen real-consumer candidate" }
         val files = frozen["files"] as Map<*, *>
