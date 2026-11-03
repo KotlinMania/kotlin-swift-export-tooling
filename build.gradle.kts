@@ -1,4 +1,5 @@
 import org.gradle.plugins.signing.Sign
+import io.github.kotlinmania.build.ProducerCli
 import groovy.json.JsonSlurper
 import java.security.MessageDigest
 import org.gradle.api.attributes.Bundling
@@ -104,8 +105,8 @@ val verifyDistribution = tasks.register("verifyDistribution") {
         val receiptFile = distributionDirectory.resolve("distribution.json")
         require(receiptFile.isFile) {
             "No verified distribution at ${distributionDirectory.absolutePath}. Produce one first " +
-                "(python3 scripts/build.py --output build/reproduction-a --cache build/inputs, then " +
-                "python3 scripts/distribution.py --build build/reproduction-a --output build/distribution-a), " +
+                "(tools/producer build --output build/reproduction-a --cache build/inputs, then " +
+                "tools/producer distribution --build build/reproduction-a --output build/distribution-a), " +
                 "or pass -PdistributionDirectory pointing at a verified distribution; see verification/PUBLISHING.md."
         }
         val lock = JsonSlurper().parse(inputsLockFile) as Map<*, *>
@@ -138,6 +139,7 @@ val verifyDistribution = tasks.register("verifyDistribution") {
         require(childText(project, "groupId") == "io.github.kotlinmania") { "POM group differs" }
         require(childText(project, "version") == lock["version"].toString()) { "POM version differs" }
         require(childText(license, "name") == "Apache License, Version 2.0") { "POM license differs" }
+        ProducerCli.run("--root", projectDir.absolutePath, "check-distribution", "--distribution", distributionDirectory.absolutePath)
         logger.lifecycle("Verified ${names.size} distribution files against the frozen release fingerprints")
     }
 }

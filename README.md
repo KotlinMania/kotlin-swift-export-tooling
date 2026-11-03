@@ -61,11 +61,12 @@ Run the consumer with the same `-Dmaven.repo.local` path when using an isolated 
 
 ### Separate Native SDK header
 
-The exporter alone is insufficient: the matching Native SDK needs the reviewed retained-return declaration. Resolve the `native-sdk-helper` ZIP classifier of the same coordinate using normal dependency resolution, verify its checksum, then extract it into an owned project build directory. The helper contains Python source, a header patch, locked input metadata and licenses; it does not contain an SDK or Native binaries.
+The exporter alone is insufficient: the matching Native SDK needs the reviewed retained-return declaration. Resolve the `native-sdk-helper` ZIP classifier of the same coordinate using normal dependency resolution and retain it as a checksum-verified input in the project build directory. The Java build tools prepare the SDK from its locked metadata and header patch. The already-published km.4 archive includes historical interpreter source; Java verifies those immutable bytes in memory and never extracts or executes that source. It does not contain an SDK or Native binaries.
 
 ```sh
 mkdir -p build/native-sdk
-python3 build/swift-tooling-helper/scripts/prepare_native_sdk.py \
+tools/producer prepare-native-sdk \
+  --helper build/distribution-a/swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip \
   --source "$OFFICIAL_KOTLIN_NATIVE_2_4_20_HOME" \
   --destination "$PWD/build/native-sdk/kotlin-native-2.4.20-km.4" \
   --receipt "$PWD/build/native-sdk/input-audit.json"
@@ -98,11 +99,17 @@ Corrected header SHA256: `99186d1dd029a8ba5b66dae390a3aec0d6d0e5293eff641d85daab
 `inputs.lock.json` pins official Kotlin revision `890ac1d94fdb80eb85f0eeb5be5e4352df987b2f`, the official exporter, every source/patch and compiler dependency. Source patches are applied with no fuzzy context and checked before and after application. No full Kotlin source checkout or frozen Rust source is vendored.
 
 ```sh
-python3 scripts/build.py --output build/reproduction-a --cache build/inputs
-python3 scripts/build.py --output build/reproduction-b --cache build/inputs
+tools/producer build --output build/reproduction-a --cache build/inputs
+tools/producer build --output build/reproduction-b --cache build/inputs
 cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.4.jar \
     build/reproduction-b/swift-export-embeddable-2.4.20-km.4.jar
+tools/producer distribution --build build/reproduction-a --output build/distribution-a
+tools/producer distribution --build build/reproduction-b --output build/distribution-b
+tools/producer check-distribution --distribution build/distribution-a --comparison build/distribution-b
+tools/producer check
 ```
+
+The launcher compiles the Java build tools with the pinned Gradle distribution and its bundled libraries. Java 21 is required for the build logic; no separate interpreter or third-party package manager is used. Generated files and temporary directories stay under this repository's `build/`. An optional `--seeds` JSON map from SHA256 to existing local files lets the compiler use verified binary caches directly, without copying SDK or toolchain caches; every selected file is still hashed and included in the compiler input audit. The build tools are also imported directly by the Gradle distribution gate. Current Java source fingerprints are recorded in separate provenance receipts. Reproducing the already-published km.4 artifacts retains their pinned release documentation and helper bytes; current usage instructions live here, and no frozen fingerprint is rewritten to accommodate the port.
 
 The build recompiles unmodified baselines and requires exact member descriptors/access flags and complete normalized instruction graphs. It rebuilds the selected producer classes from authoritative source, keeps unselected official classes unchanged, and checks all non-debug class attributes against reviewed fingerprints. Only source/line/local-variable debug maps and the exact validated invisible Kotlin SourceDebugExtension SMAP annotation are excluded from that comparison; annotations, Kotlin metadata, frames and executable instructions remain. Fail-closed auditor tests reject malformed/duplicate debug annotations and preserve actual field changes. Complete-source debug maps can differ from the earlier incremental diagnostic artifact; that raw mismatch is recorded rather than relabeled as byte equality.
 

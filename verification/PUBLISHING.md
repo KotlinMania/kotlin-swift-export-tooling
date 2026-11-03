@@ -11,7 +11,7 @@
 4. Publish with existing authentication and an existing signing key only:
 
    ```sh
-   python3 scripts/publish.py --distribution build/distribution-a \
+   tools/producer publish --distribution build/distribution-a \
      --output build/publication --pr-ci-run PR_RUN_ID --main-ci-run MAIN_RUN_ID
    ```
 
@@ -27,7 +27,7 @@
 6. After Central reports publication, independently retrieve:
 
    ```sh
-   python3 scripts/verify_published.py --output build/central-retrieval
+   tools/producer verify-published --output build/central-retrieval
    ```
 
    Verify each detached signature against the existing trusted signing public
@@ -56,8 +56,8 @@ each byte against the same frozen fingerprints, so the bare command works
 without a local reproduction. A `verifyDistribution` gate then runs: the receipt
 against the frozen `verification/release-artifacts.json` fingerprints, every
 file byte-for-byte by checksum, and the POM identity; the deep archive and
-licensing audits remain in the Python release pipeline
-(`scripts/check_distribution.py`), and the frozen fingerprints are only
+licensing audits run in the Java release pipeline and the Gradle gate
+(`tools/producer check-distribution`), and the frozen fingerprints are only
 written after those pass. The generated POM is replaced with the frozen
 verified POM bytes so the install is byte-identical to the audited release.
 Consumers resolve the local repository restricted to `io.github.kotlinmania`
