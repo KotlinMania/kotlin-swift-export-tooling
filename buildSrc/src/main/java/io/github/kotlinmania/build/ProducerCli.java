@@ -19,7 +19,7 @@ public final class ProducerCli {
         check(!args.isEmpty(), "Expected producer command; see tools/producer help");
         String command = args.removeFirst();
         if (command.equals("help") || command.equals("--help")) {
-            System.out.println("Commands: build, build-collection-candidate, distribution, check-distribution, stage-resolution, download-native-sdk, prepare-native-sdk, audit-closure, consumer, array-consumer, bytearray-consumer, collection-consumer, iterator-consumer, reverse-import-consumer, verify-published, publish.\nUse the original named arguments with hyphenated command names; --helper is the immutable published helper ZIP. All generated paths belong under this repository's build/. tools/producer check runs the Java regression checks.");
+            System.out.println("Commands: build, build-collection-candidate, build-native-forwarding-candidate, build-protocol-spi-defaults-candidate, build-native-writable-type-info-candidate, distribution, check-distribution, stage-resolution, download-native-sdk, prepare-native-sdk, audit-closure, consumer, array-consumer, bytearray-consumer, collection-consumer, iterator-consumer, reverse-import-consumer, verify-published, publish.\nUse the original named arguments with hyphenated command names; --helper is the immutable published helper ZIP. All generated paths belong under this repository's build/. tools/producer check runs the Java regression checks.");
             return 0;
         }
         int booleanFlag = args.indexOf("--host-tests");
@@ -28,6 +28,9 @@ public final class ProducerCli {
         Set<String> allowed = switch (command) {
             case "build" -> Set.of("output", "cache", "seeds");
             case "build-collection-candidate" -> Set.of("output", "cache", "component", "sources");
+            case "build-native-forwarding-candidate" -> Set.of("output", "cache", "component", "native-home", "seeds");
+            case "build-protocol-spi-defaults-candidate" -> Set.of("output", "cache", "component", "native-home", "seeds");
+            case "build-native-writable-type-info-candidate" -> Set.of("output", "native-home", "source");
             case "distribution" -> Set.of("build", "output", "helper-archive");
             case "check-distribution" -> Set.of("distribution", "comparison");
             case "stage-resolution" -> Set.of("distribution", "repository");
@@ -45,6 +48,9 @@ public final class ProducerCli {
         switch (command) {
             case "build" -> new ProducerBuild(context).build(path(options, "output"), path(options, "cache"), options.containsKey("seeds") ? m(Json.read(path(options, "seeds"))) : Map.of());
             case "build-collection-candidate" -> new ProducerBuild(context).collectionCandidate(path(options, "output"), path(options, "cache"), path(options, "component"), path(options, "sources"));
+            case "build-native-forwarding-candidate" -> new ProducerNativeForwarding(context).build(path(options, "output"), path(options, "cache"), path(options, "component"), path(options, "native-home"), options.containsKey("seeds") ? m(Json.read(path(options, "seeds"))) : Map.of());
+            case "build-protocol-spi-defaults-candidate" -> new ProducerProtocolSpiDefaults(context).build(path(options, "output"), path(options, "cache"), path(options, "component"), path(options, "native-home"), options.containsKey("seeds") ? m(Json.read(path(options, "seeds"))) : Map.of());
+            case "build-native-writable-type-info-candidate" -> new ProducerNativeWritableTypeInfo(context).build(path(options, "output"), path(options, "native-home"), path(options, "source"));
             case "distribution" -> System.out.println(json(distribution.prepare(path(options, "build"), path(options, "output"), options.containsKey("helper-archive") ? path(options, "helper-archive") : null)));
             case "check-distribution" -> distribution.validate(path(options, "distribution"), options.containsKey("comparison") ? path(options, "comparison") : null);
             case "stage-resolution" -> distribution.stage(path(options, "distribution"), path(options, "repository"));

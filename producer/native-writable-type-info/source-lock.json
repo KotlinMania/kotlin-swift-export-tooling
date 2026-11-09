@@ -1,0 +1,20 @@
+{
+  "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "source": {
+    "name": "WritableTypeInfo.kt",
+    "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/llvm/objcexport/WritableTypeInfo.kt",
+    "sha256": "9f58e8d8d4eeff325e5f9178292d1ab01574d770eab7626576cc1820dee7df2d"
+  },
+  "patch": "producer/native-writable-type-info/WritableTypeInfo.kt.patch",
+  "patch_sha256": "566d24ea13ce2fe7d1587a814d1438fd23ead3826e158e42913ab2f4b10d148c",
+  "candidate_source_sha256": "4f4a69f873adcf963f1b346ca90dd63b28b0d10bbce4e9090dbc609610ce9b35",
+  "native_compiler_sha256": "bad46f043b98d14c4150d654ea98996cabf71e7ad87ea3a57538956164443105",
+  "changed_classes": [
+    "org/jetbrains/kotlin/backend/konan/llvm/objcexport/OverridableWritableTypeInfo.class",
+    "org/jetbrains/kotlin/backend/konan/llvm/objcexport/WritableTypeInfoKt.class"
+  ],
+  "candidate_attributes": {
+    "org/jetbrains/kotlin/backend/konan/llvm/objcexport/OverridableWritableTypeInfo.class": "15bcd6af1cc2a9673248e5ca4a84f72bec877fe641e7e846bc7f9f13b91bd537",
+    "org/jetbrains/kotlin/backend/konan/llvm/objcexport/WritableTypeInfoKt.class": "45bb92209bec10b4dcf7a009538395f00ebeb8328127ac93f419ddf270b0f4f3"
+  }
+}

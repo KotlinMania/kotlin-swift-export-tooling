@@ -1,0 +1,12 @@
+--- a/SirProtocolFromKtSymbol.kt
++++ b/SirProtocolFromKtSymbol.kt
+@@ -561,7 +561,8 @@
+         fun createSpiTrap(name: String) =
+             SirFunctionBody(listOf("fatalError(\"'${name}' is an @_spi requirement that must be implemented by Swift conformers\")"))
+ 
+-        val spiFunctionTraps = spiMembers.filterIsInstance<SirFunction>().map { function ->
++        val spiFunctionTraps = spiMembers.filterIsInstance<SirFunction>()
++            .filter { it !in witnessSources }.map { function ->
+             buildFunctionCopy(function) {
+                 origin = SirOrigin.Trampoline(function)
+                 isOverride = false
