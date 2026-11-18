@@ -251,10 +251,10 @@ public final class ProducerConsumers {
     }
     private static List<String> append(List<String> args, String... extra) { List<String> result = new ArrayList<>(args); result.addAll(List.of(extra)); return result; }
     private static List<String> swiftArgs(Path root, Path harness, String configuration, boolean proc) {
-        List<String> args = new ArrayList<>(List.of("/usr/bin/xcrun", "swift", "test", "-v"));
+        List<String> args = new ArrayList<>(List.of("/usr/bin/xcrun", "swift", "test", "-v", "--build-system", "native"));
         if (configuration != null) args.addAll(List.of("-c", configuration.toLowerCase(Locale.ROOT)));
-        args.addAll(List.of("--package-path", harness.toString(), "--scratch-path", root.resolve("swift-build").toString(), "--cache-path", root.resolve("swiftpm/cache").toString(), "--config-path", root.resolve("swiftpm/config").toString(), "--security-path", root.resolve("swiftpm/security").toString(), "--jobs", "2", "-Xswiftc", "-warnings-as-errors"));
-        if (proc) args.addAll(List.of("-Xswiftc", "-v")); args.addAll(List.of("-Xswiftc", "-target", "-Xswiftc", "arm64-apple-macosx15.0")); return args;
+        args.addAll(List.of("--package-path", harness.toString(), "--scratch-path", root.resolve("swift-build").toString(), "--cache-path", root.resolve("swiftpm/cache").toString(), "--config-path", root.resolve("swiftpm/config").toString(), "--security-path", root.resolve("swiftpm/security").toString(), "--jobs", "2", "-Xswiftc", "-warnings-as-errors", "-Xswiftc", "-v", "-Xswiftc", "-target", "-Xswiftc", "arm64-apple-macosx15.0"));
+        return args;
     }
 
     record Frontends(List<Map<String, Object>> products, List<String> manifests) {}
@@ -293,13 +293,13 @@ public final class ProducerConsumers {
             check(!line.contains(" -package-description-version "), "Unexpected package manifest frontend");
             String mode = lastOption(arguments, "-swift-version");
             String target = lastOption(arguments, "-target");
-            boolean mac15 = "arm64-apple-macosx15.0".equals(target) || proc && "arm64-apple-macos15.0".equals(target);
+            boolean mac15 = "arm64-apple-macosx15.0".equals(target) || "arm64-apple-macos15.0".equals(target);
             check(arguments.contains("-warnings-as-errors") && mac15, "Missing Werror/effective mac15 product frontend: " + module);
             if (module.endsWith("PackageTests")) {
-                if (strictRunner) check(mode == null || mode.equals("6") || proc && mode.equals("6.0"), "Unexpected generated runner mode: " + mode);
+                if (strictRunner) check(mode == null || mode.equals("6") || mode.equals("6.0"), "Unexpected generated runner mode: " + mode);
             } else {
                 String expected = authored.contains(module) ? "6" : "5";
-                check(expected.equals(mode) || proc && (expected + ".0").equals(mode), "Unexpected module language mode: " + module + ": " + mode);
+                check(expected.equals(mode) || (expected + ".0").equals(mode), "Unexpected module language mode: " + module + ": " + mode);
             }
             products.add(obj("module", module, "mode", mode, "swift_version", mode, "werror", true, "mac15", true, "target", true, "effective_target", target, "command", line));
         }
@@ -491,7 +491,6 @@ public final class ProducerConsumers {
         session.run("embed", append(gradleArgs, "embedSwiftExportForXcode"), root.resolve("fixture")); Path archive = root.resolve("products/lib" + profile.module() + ".a"); check(Files.isRegularFile(archive), "Missing actual Native library archive: " + archive);
         Map<String, String> emitted = emitted(packageRoot, archive); writeJson(root.resolve("emitted-pins.json"), emitted);
         List<String> swiftCommand = swiftArgs(root, harness, array ? null : configuration, false);
-        if (nullableUnsigned) swiftCommand.addAll(List.of("--build-system", "native", "-Xswiftc", "-v"));
         String output = session.run("swift", swiftCommand, root);
         List<String> names = array ? strings(Json.read(support.p("verification/array-expected-tests.json"))) : profile.tests(); check(!array || names.size() == 27, "Expected twenty-seven Array behaviors");
         Map<String, Integer> counts = testCounts(output, names); Set<String> authored = reverse ? Set.of("ReverseImportTests", "SwiftProvider") : Set.of(profile.testModule());
@@ -607,7 +606,7 @@ public final class ProducerConsumers {
             support.p("verification/consumer-source-pins.json"), support.p("verification/consumer-public-declarations.json"), sdkAudit, sdkDownloadAudit, helper));
         Map<String, String> producerPins = pins(producerInputs); writeJson(root.resolve("producer-inputs.json"), producerPins); writeJson(root.resolve("stock-inputs.json"), Map.of());
         write(root.resolve("isolation.init.gradle"), Files.readString(support.p("verification/consumer.init.gradle")) + consumerInitGuard());
-        Path testSource = repo.resolve("src/swift/swift-test-harness/Tests/SwiftTestHarnessTests/ProcMacro2ExportTests.swift"); Path copiedTest = root.resolve("harness/Tests/SwiftTestHarnessTests/ProcMacro2ExportTests.swift");
+        Path testSource = repo.resolve("swift-test-harness/Tests/SwiftTestHarnessTests/ProcMacro2ExportTests.swift"); Path copiedTest = root.resolve("harness/Tests/SwiftTestHarnessTests/ProcMacro2ExportTests.swift");
         Files.createDirectories(copiedTest.getParent()); Files.copy(testSource, copiedTest);
         String manifest = "// swift-tools-version: 6.0\nimport PackageDescription\nlet package = Package(name: \"SwiftTestHarness\", platforms: [.macOS(\"15.0\")], dependencies: [.package(name: \"ProcMacro2\", path: "
             + quote(root.resolve("build/SPMPackage/macosArm64/Debug")) + ")], targets: [.testTarget(name: \"SwiftTestHarnessTests\", dependencies: [.product(name: \"ProcMacro2Library\", package: \"ProcMacro2\")], linkerSettings: [.unsafeFlags([\"-L\", "
