@@ -1,0 +1,49 @@
+--- a/TypeBridging.kt
++++ b/TypeBridging.kt
+@@ -635,6 +635,37 @@
+                 override fun kotlinToSwift(typeNamer: SirTypeNamer, valueExpression: String) =
+                     "$valueExpression.objcPtr()"
+             }
++        } else if ((swiftType as? SirNominalType)?.typeDeclaration in setOf(
++                SirSwiftModule.uint8, SirSwiftModule.uint16, SirSwiftModule.uint32, SirSwiftModule.uint64,
++            )) {
++            object : ValueConversion {
++                // NSNumber does not preserve its construction type. The Native runtime may
++                // return a signed or unsigned integral box; unsigned boxes are not Number.
++                // Normalize every integral representation without using floating point or
++                // losing the high bit of UInt64. The surrounding optional bridge owns null.
++                context(session: SirSession)
++                override fun swiftToKotlin(typeNamer: SirTypeNamer, valueExpression: String): String {
++                    val conversion = when ((swiftType as SirNominalType).typeDeclaration) {
++                        SirSwiftModule.uint8 -> "toUByte"
++                        SirSwiftModule.uint16 -> "toUShort"
++                        SirSwiftModule.uint32 -> "toUInt"
++                        SirSwiftModule.uint64 -> "toULong"
++                        else -> error("Expected an unsigned NSNumber bridge")
++                    }
++                    val targetType = conversion.removePrefix("to")
++                    val branches = listOf("Byte", "Short", "Int", "Long", "UByte", "UShort", "UInt", "ULong")
++                        .joinToString("; ") {
++                            if (it == targetType) "is kotlin.$it -> boxedNumber"
++                            else "is kotlin.$it -> boxedNumber.$conversion()"
++                        }
++                    return "when (val boxedNumber = interpretObjCPointer<kotlin.Any>($valueExpression)) { " +
++                            branches + "; else -> throw kotlin.ClassCastException(\"Expected an integral NSNumber\") }"
++                }
++
++                context(session: SirSession)
++                override fun kotlinToSwift(typeNamer: SirTypeNamer, valueExpression: String): String =
++                    "$valueExpression.objcPtr()"
++            }
+         } else {
+             super.inKotlinSources
+         }
+@@ -752,7 +783,7 @@
+                     return super.kotlinToSwift(typeNamer, valueExpression)
+                 }
+                 val elementConversion = elementBridge.inSwiftSources.kotlinToSwift(typeNamer, "__element as! Swift.Int")
+-                return "($valueExpression as! [Any]).map { __element in $elementConversion }"
++                return "$valueExpression.map { __element in $elementConversion }"
+             }
+         }
+ 

@@ -1,0 +1,11 @@
+--- a/KotlinFileGenerator.kt
++++ b/KotlinFileGenerator.kt
+@@ -14,7 +14,7 @@
+     private val imports = mutableSetOf<String>()
+     private val functions = mutableSetOf<List<String>>()
+     private val fileLevelAnnotations = mutableSetOf<String>(
+-        """kotlin.Suppress("DEPRECATION_ERROR")""",
++        """kotlin.Suppress("DEPRECATION_ERROR", "DEPRECATION")""",
+     )
+     private val fileLevelOptIns = mutableSetOf<String>()
+ 

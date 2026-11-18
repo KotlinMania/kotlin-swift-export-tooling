@@ -40,7 +40,7 @@ final class ProducerDistribution {
 
     static String prefix(Map<String, Object> lock) { return lock.get("artifact") + "-" + lock.get("version"); }
     static String centralBase(Map<String, Object> lock) { return "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/" + lock.get("version") + "/"; }
-    private static final List<String> REPAIRS = List.of("array_repair", "bytearray_repair", "collection_repair");
+    private static final List<String> REPAIRS = List.of("array_repair", "bytearray_repair", "collection_repair", "km5_repair");
     private Map<String, byte[]> common(Map<String, Object> lock) throws IOException {
         Map<String, byte[]> result = new TreeMap<>();
         for (String name : m(lock.get("licenses")).keySet()) result.put(name, Files.readAllBytes(safe(c.repo, name)));
@@ -50,7 +50,8 @@ final class ProducerDistribution {
     }
     Set<String> helperNames(Map<String, Object> lock) {
         Set<String> names = new TreeSet<>(m(lock.get("licenses")).keySet());
-        names.addAll(List.of("inputs.lock.json", "README.md", "scripts/prepare_native_sdk.py", "patches/KotlinBase.h.patch"));
+        names.addAll(List.of("inputs.lock.json", "README.md", "patches/KotlinBase.h.patch"));
+        if (!lock.containsKey("km5_repair")) names.add("scripts/prepare_native_sdk.py");
         for (String repair : REPAIRS) if (lock.containsKey(repair)) names.add(s(lock.get(repair)));
         return names;
     }
@@ -76,31 +77,41 @@ final class ProducerDistribution {
         Map<String, Object> lock = c.lock(), result = m(Json.read(build.resolve("build-result.json")));
         Path main = safe(build, s(result.get("artifact")));
         check(sha(main).equals(result.get("sha256")) && !Files.exists(output), "Unverified build or existing distribution directory");
-        Path helper = frozenHelper(lock, helperInput);
+        boolean isKm5 = lock.containsKey("km5_repair");
+        Path helper = isKm5 ? null : frozenHelper(lock, helperInput);
         Files.createDirectories(output); String prefix = prefix(lock);
         Files.copy(main, output.resolve(prefix + ".jar"));
         Map<String, byte[]> common = common(lock), sources = new TreeMap<>(common);
         for (Map<String, Object> row : rows(lock.get("sources"))) sources.put(s(row.get("path")), Files.readAllBytes(safe(build.resolve("candidate/sources"), s(row.get("name")))));
         for (Path path : files(c.p("patches"))) if (path.toString().endsWith(".patch")) sources.put(c.repo.relativize(path).toString().replace('\\', '/'), Files.readAllBytes(path));
+        List<String> repairDirs = List.of("producer/arrays", "producer/byte-arrays", "producer/collections", "producer/km5");
         for (int i = 0; i < REPAIRS.size(); i++) if (lock.containsKey(REPAIRS.get(i))) {
-            Path directory = c.p(List.of("producer/arrays", "producer/byte-arrays", "producer/collections").get(i));
+            Path directory = c.p(repairDirs.get(i));
             try (var paths = Files.list(directory)) { for (Path path : paths.filter(Files::isRegularFile).sorted().toList()) sources.put(c.repo.relativize(path).toString().replace('\\', '/'), Files.readAllBytes(path)); }
         }
+        if (isKm5) {
+            for (String extraDir : List.of("producer/protocol-spi-defaults", "producer/nullable-unsigned", "producer/deprecation-bridge", "producer/reverse-collection-cast")) {
+                Path directory = c.p(extraDir);
+                if (Files.isDirectory(directory)) try (var paths = Files.list(directory)) { for (Path path : paths.filter(Files::isRegularFile).sorted().toList()) sources.put(c.repo.relativize(path).toString().replace('\\', '/'), Files.readAllBytes(path)); }
+            }
+        }
         archive(output.resolve(prefix + "-sources.jar"), sources);
-        // This already-published version retains its documented release contents. Current
-        // Java usage belongs to the live README and the separate provenance receipt.
-        byte[] releasedReadme = entry(helper, "README.md");
+        byte[] releasedReadme = isKm5 ? Files.readAllBytes(c.p("README.md")) : entry(helper, "README.md");
         String document = "<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><title>KotlinMania Swift export tooling</title><body><pre>" + html(new String(releasedReadme, StandardCharsets.UTF_8)) + "</pre></body></html>\n";
         Map<String, byte[]> docs = new TreeMap<>(common); docs.put("index.html", document.getBytes(StandardCharsets.UTF_8));
         archive(output.resolve(prefix + "-javadoc.jar"), docs);
         Map<String, byte[]> expectedHelper = new TreeMap<>(common);
         expectedHelper.put("README.md", releasedReadme);
         expectedHelper.put("patches/KotlinBase.h.patch", Files.readAllBytes(c.p("patches/KotlinBase.h.patch")));
-        expectedHelper.put("scripts/prepare_native_sdk.py", entry(helper, "scripts/prepare_native_sdk.py"));
-        Map<String, byte[]> publishedHelper = entries(helper);
-        check(publishedHelper.keySet().equals(expectedHelper.keySet()) && expectedHelper.entrySet().stream().allMatch(row -> Arrays.equals(row.getValue(), publishedHelper.get(row.getKey()))), "Published helper data differs from current locked sources");
-        archive(output.resolve(prefix + "-native-sdk-helper.zip"), expectedHelper);
-        check(sha(output.resolve(prefix + "-native-sdk-helper.zip")).equals(sha(helper)), "Helper format differs from immutable published bytes");
+        if (!isKm5) {
+            expectedHelper.put("scripts/prepare_native_sdk.py", entry(helper, "scripts/prepare_native_sdk.py"));
+            Map<String, byte[]> publishedHelper = entries(helper);
+            check(publishedHelper.keySet().equals(expectedHelper.keySet()) && expectedHelper.entrySet().stream().allMatch(row -> Arrays.equals(row.getValue(), publishedHelper.get(row.getKey()))), "Published helper data differs from current locked sources");
+        }
+        Path helperArchive = output.resolve(prefix + "-native-sdk-helper.zip");
+        archive(helperArchive, expectedHelper);
+        if (!isKm5) check(sha(helperArchive).equals(sha(helper)), "Helper format differs from immutable published bytes");
+        else if (helperInput != null) check(sha(helperArchive).equals(sha(helperInput)), "Helper format differs from supplied archive");
         write(output.resolve(prefix + ".pom"), pom(lock));
         writeJson(output.resolve(prefix + "-sbom.json"), sbom(lock));
         Map<String, String> hashes = new TreeMap<>();
@@ -108,7 +119,7 @@ final class ProducerDistribution {
         Map<String, Object> receipt = obj("files", hashes, "main_component_sha256", result.get("sha256"), "native_header_sha256", m(lock.get("native_header")).get("candidate_sha256"), "rust_sources_included", false, "native_sdk_binaries_included", false);
         writeJson(output.resolve("distribution.json"), receipt);
         List<Path> javaSources = files(c.p("buildSrc/src/main/java"));
-        writeJson(output.resolveSibling(output.getFileName() + ".java-provenance.json"), obj("entry_point", "io.github.kotlinmania.build.ProducerCli distribution", "java_source_sha256", pins(javaSources), "current_readme_sha256", sha(c.p("README.md")), "immutable_release_readme_sha256", digest(releasedReadme), "immutable_helper_archive_sha256", sha(helper), "archived_interpreter_source_executed", false, "release_files", hashes));
+        writeJson(output.resolveSibling(output.getFileName() + ".java-provenance.json"), obj("entry_point", "io.github.kotlinmania.build.ProducerCli distribution", "java_source_sha256", pins(javaSources), "current_readme_sha256", sha(c.p("README.md")), "immutable_release_readme_sha256", digest(releasedReadme), "immutable_helper_archive_sha256", sha(isKm5 ? helperArchive : helper), "archived_interpreter_source_executed", false, "release_files", hashes));
         return receipt;
     }
     private static String html(String text) { return xml(text).replace("\"", "&quot;").replace("'", "&#x27;"); }
@@ -201,7 +212,7 @@ final class ProducerDistribution {
             helper = frozenHelper(lock, helper);
             check(Arrays.equals(entry(helper, "patches/KotlinBase.h.patch"), Files.readAllBytes(patch)), "Published header patch differs");
             provenance.put("immutable_helper_archive_sha256", sha(helper));
-            provenance.put("immutable_archived_helper_source_sha256", digest(entry(helper, "scripts/prepare_native_sdk.py")));
+            if (!lock.containsKey("km5_repair")) provenance.put("immutable_archived_helper_source_sha256", digest(entry(helper, "scripts/prepare_native_sdk.py")));
         }
         writeJson(receipt, SwiftToolingPreparer.prepareSdk(source, destination, lock, patch));
         writeJson(receipt.resolveSibling(receipt.getFileName() + ".java-provenance.json"), provenance);
@@ -271,7 +282,8 @@ final class ProducerDistribution {
         }
         for (String key : List.of("MAVEN_CENTRAL_USERNAME", "MAVEN_CENTRAL_PASSWORD", "SIGNING_KEY", "SIGNING_KEY_PASSWORD")) check(environment.containsKey(key) && !environment.get(key).isEmpty(), "Existing credential missing: " + key);
         check(!Files.exists(output), "New publication output directory required"); Files.createDirectories(output);
-        c.run(List.of("gradle", "signRelease", "--no-daemon", "--max-workers=2", "--no-configuration-cache", "--console=plain", "-PdistributionDirectory=" + distribution), output.resolve("signing.log"), c.repo, environment);
+        String gradleCmd = Files.isExecutable(c.p("gradlew")) ? c.p("gradlew").toString() : "gradle";
+        c.run(List.of(gradleCmd, "signRelease", "--no-daemon", "--max-workers=2", "--no-configuration-cache", "--console=plain", "-PdistributionDirectory=" + distribution), output.resolve("signing.log"), c.repo, environment);
         Map<String, Object> verified = signatures(distribution, m(actual.get("files")).keySet(), output.resolve("signature-verification"));
         Path staging = output.resolve("staging"), layout = staging.resolve("io/github/kotlinmania/swift-export-embeddable/" + lock.get("version")); Files.createDirectories(layout);
         for (String name : m(actual.get("files")).keySet()) for (String suffix : List.of("", ".asc")) {

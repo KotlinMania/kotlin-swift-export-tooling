@@ -92,7 +92,8 @@ final class ProducerBuild {
     }
     void build(Path output, Path cache, Map<String, Object> seeds) throws Exception {
         Map<String, Object> lock = c.lock();
-        if (lock.containsKey("collection_repair")) collections(output, cache, seeds, lock);
+        if (lock.containsKey("km5_repair")) km5(output, cache, seeds, lock);
+        else if (lock.containsKey("collection_repair")) collections(output, cache, seeds, lock);
         else if (lock.containsKey("bytearray_repair")) bytearrays(output, cache, seeds, lock);
         else if (lock.containsKey("array_repair")) arrays(output, cache, seeds, lock);
         else baseline(output, cache, seeds, lock);
@@ -232,6 +233,213 @@ final class ProducerBuild {
         writeJson(output.resolve("build-result.json"), obj("artifact", result.getFileName().toString(), "sha256", sha(result), "changed_entries", changed, "added_entries", new ArrayList<>(added), "removed_file_entries", List.of(),
                 "base_component_sha256", repair.get("base_component_sha256"), "class_deltas", audit.get("candidate_attributes"), "all_non_debug_class_attributes_match_reviewed_candidate", true,
                 "collection_audit_sha256", sha(auditRoot.resolve("verified-host-result.json")), "native_header_sha256", m(lock.get("native_header")).get("candidate_sha256")));
+        System.out.println(result + " " + sha(result));
+    }
+
+    private void km5(Path output, Path cache, Map<String, Object> seeds, Map<String, Object> lock) throws Exception {
+        Path repairPath = c.p(s(lock.get("km5_repair")));
+        check(sha(repairPath).equals(lock.get("km5_repair_sha256")), "km5 source lock mismatch");
+        Map<String, Object> repair = m(Json.read(repairPath));
+        Path spiLockPath = c.p(s(repair.get("protocol_spi_defaults_lock")));
+        Map<String, Object> spiRepair = m(Json.read(spiLockPath));
+        Path spiProtocolPatch = c.p(s(spiRepair.get("patch"))), spiVariablePatch = c.p(s(spiRepair.get("variable_patch"))), spiFunctionPatch = c.p(s(spiRepair.get("function_patch")));
+        check(sha(spiProtocolPatch).equals(spiRepair.get("patch_sha256")), "SPI protocol patch mismatch");
+        check(sha(spiVariablePatch).equals(spiRepair.get("variable_patch_sha256")), "SPI variable patch mismatch");
+        check(sha(spiFunctionPatch).equals(spiRepair.get("function_patch_sha256")), "SPI function patch mismatch");
+
+        check(!Files.exists(output), "Build output must be new");
+        Files.createDirectories(output); Files.createDirectories(cache); Files.createDirectory(output.resolve("tmp"));
+        licenses(lock);
+        Map<String, Path> tools = tools(lock, cache, seeds);
+        Path parent = tools.get(s(repair.get("base_component"))), parentSources = tools.get(s(repair.get("parent_sources")));
+        check(parent != null && sha(parent).equals(repair.get("base_component_sha256")), "Published km5 parent mismatch");
+        check(parentSources != null && sha(parentSources).equals(repair.get("parent_sources_sha256")), "Published km5 parent sources mismatch");
+        List<Path> worker = worker(lock, tools, parent), bootstrap = bootstrap(lock, tools, worker, true);
+        check(worker.size() == 16, "Worker closure changed");
+        String cp = classpath(worker), auditCp = auditor(output, cp);
+
+        Path auditRoot = output.resolve("km5"); Files.createDirectories(auditRoot);
+        Map<String, byte[]> updatedSources = new LinkedHashMap<>();
+
+        // 1. sir-providers (combined collections callback cast + nullable-unsigned + reverse-collection-cast)
+        List<String> providerOrder = List.of("TypeBridging.kt", "Types.kt", "SirSession.kt", "SirCustomTypeTranslatorImpl.kt", "AsStringArray.kt", "AsStringArrayObjC.kt", "SirBridgeProviderImpl.kt");
+        Map<String, Object> providerRows = m(repair.get("providers_sources"));
+        check(providerRows.keySet().equals(Set.copyOf(providerOrder)), "km5 providers source inventory changed");
+        for (String variant : List.of("baseline", "candidate")) {
+            Path srcDir = auditRoot.resolve("providers/" + variant + "/sources"), inDir = auditRoot.resolve("providers/" + variant + "/inputs");
+            Files.createDirectories(srcDir); Files.createDirectories(inDir);
+            for (String name : providerOrder) {
+                Map<String, Object> row = m(providerRows.get(name));
+                byte[] data = entry(parentSources, s(row.get("archive_entry")));
+                check(digest(data).equals(row.get("sha256")), "Provider source differs: " + name);
+                write(safe(srcDir, name), data);
+            }
+            if (variant.equals("candidate")) {
+                for (String patchedName : List.of("TypeBridging.kt", "SirBridgeProviderImpl.kt")) {
+                    Map<String, Object> row = m(providerRows.get(patchedName));
+                    Path patchFile = c.p(s(row.get("patch")));
+                    check(sha(patchFile).equals(row.get("patch_sha256")), "Patch mismatch: " + patchedName);
+                    Path target = srcDir.resolve(patchedName);
+                    patch(target, patchFile, auditRoot.resolve("providers-" + patchedName + ".patch.log"));
+                    check(sha(target).equals(row.get("candidate_source_sha256")), "Candidate source differs: " + patchedName);
+                    updatedSources.put(patchedName, Files.readAllBytes(target));
+                }
+            }
+            List<Path> inputs = new ArrayList<>();
+            for (String name : providerOrder) {
+                Path target = safe(inDir, name);
+                write(target, normalizeSource(Files.readString(srcDir.resolve(name))));
+                if (variant.equals("candidate") && m(providerRows.get(name)).containsKey("candidate_normalized_sha256")) {
+                    check(sha(target).equals(m(providerRows.get(name)).get("candidate_normalized_sha256")), "Normalized source differs: " + name);
+                }
+                inputs.add(target);
+            }
+            for (Map.Entry<String, String> mod : Map.of("published", "org.jetbrains.kotlin:sir-providers", "rebuilt", "org.jetbrains.kotlin_sir-providers").entrySet()) {
+                Path cls = auditRoot.resolve("providers/" + variant + "/" + mod.getKey() + "/classes");
+                Path canon = auditRoot.resolve("providers/" + variant + "/" + mod.getKey() + "/canonical");
+                Files.createDirectories(cls); Files.createDirectories(canon);
+                List<String> cmd = compiler(bootstrap, cp, parent, output.resolve("tmp"), mod.getValue(), inputs, cls, false);
+                c.run(cmd, auditRoot.resolve("providers/" + variant + "/" + mod.getKey() + "/compile.log"));
+                canonical(auditCp, cls, canon, classInventory(cls), auditRoot.resolve("providers/" + variant + "/" + mod.getKey() + "/attributes.log"));
+            }
+        }
+        List<String> providerDelta = List.of(
+                "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray$inSwiftSources$1.class",
+                "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSNumber.class",
+                "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/BridgeFunctionDescriptor.class");
+        List<String> providerBaseEntries = classInventory(auditRoot.resolve("providers/baseline/published/classes"));
+        List<String> providerCandEntries = classInventory(auditRoot.resolve("providers/candidate/published/classes"));
+        check(difference(new TreeSet<>(providerCandEntries), new TreeSet<>(providerBaseEntries)).equals(Set.of("org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSNumber$inKotlinSources$2.class")), "Provider added class delta changed");
+        check(difference(new TreeSet<>(providerBaseEntries), new TreeSet<>(providerCandEntries)).isEmpty(), "Provider removed classes");
+        for (String mod : List.of("published", "rebuilt")) {
+            check(classInventory(auditRoot.resolve("providers/baseline/" + mod + "/classes")).equals(providerBaseEntries), "Provider baseline inventory differs: " + mod);
+            check(classInventory(auditRoot.resolve("providers/candidate/" + mod + "/classes")).equals(providerCandEntries), "Provider candidate inventory differs: " + mod);
+            check(differences(providerBaseEntries, auditRoot.resolve("providers/baseline/" + mod + "/canonical"), auditRoot.resolve("providers/candidate/" + mod + "/canonical")).equals(providerDelta), "Unexpected provider class delta in " + mod);
+        }
+
+        // 2. sir-printer (deprecation bridge file-level suppression)
+        Map<String, Object> printerRow = m(repair.get("printer_source"));
+        Path printerOrig = c.fetch(printerRow, cache, seeds);
+        check(sha(printerOrig).equals(printerRow.get("sha256")), "Printer source differs");
+        Path printerPatch = c.p(s(printerRow.get("patch")));
+        check(sha(printerPatch).equals(printerRow.get("patch_sha256")), "Printer patch differs");
+        for (String variant : List.of("baseline", "candidate")) {
+            Path src = auditRoot.resolve("printer/" + variant + "/sources/KotlinFileGenerator.kt");
+            Path in = auditRoot.resolve("printer/" + variant + "/inputs/KotlinFileGenerator.kt");
+            write(src, Files.readAllBytes(printerOrig));
+            if (variant.equals("candidate")) {
+                patch(src, printerPatch, auditRoot.resolve("printer.patch.log"));
+                check(sha(src).equals(printerRow.get("candidate_source_sha256")), "Printer candidate source differs");
+                updatedSources.put("KotlinFileGenerator.kt", Files.readAllBytes(src));
+            }
+            write(in, normalizeSource(Files.readString(src)));
+            if (variant.equals("candidate")) check(sha(in).equals(printerRow.get("candidate_normalized_sha256")), "Printer normalized source differs");
+            Path cls = auditRoot.resolve("printer/" + variant + "/classes"), canon = auditRoot.resolve("printer/" + variant + "/canonical");
+            Files.createDirectories(cls); Files.createDirectories(canon);
+            c.run(compiler(bootstrap, cp, parent, output.resolve("tmp"), "org.jetbrains.kotlin:sir-printer", List.of(in), cls, false), auditRoot.resolve("printer/" + variant + "/compile.log"));
+            canonical(auditCp, cls, canon, classInventory(cls), auditRoot.resolve("printer/" + variant + "/attributes.log"));
+        }
+        List<String> printerBaseEntries = classInventory(auditRoot.resolve("printer/baseline/classes"));
+        check(classInventory(auditRoot.resolve("printer/candidate/classes")).equals(printerBaseEntries), "Printer class inventory changed");
+        check(differences(printerBaseEntries, auditRoot.resolve("printer/baseline/canonical"), auditRoot.resolve("printer/candidate/canonical"))
+                .equals(List.of("org/jetbrains/sir/printer/impl/KotlinBridgePrinter.class")), "Unexpected printer class delta");
+
+        // 3. sir-light-classes (protocol-spi-defaults)
+        for (String variant : List.of("baseline", "candidate")) {
+            Path srcDir = auditRoot.resolve("lightclasses/" + variant + "/sources"), inDir = auditRoot.resolve("lightclasses/" + variant + "/inputs");
+            Files.createDirectories(srcDir); Files.createDirectories(inDir);
+            List<Path> inputs = new ArrayList<>();
+            for (Map<String, Object> row : rows(spiRepair.get("sources"))) {
+                String name = s(row.get("name"));
+                Path orig = c.fetch(row, cache, seeds), src = srcDir.resolve(name), in = inDir.resolve(name);
+                write(src, Files.readAllBytes(orig));
+                if (variant.equals("candidate")) {
+                    if (name.equals("SirProtocolFromKtSymbol.kt")) {
+                        patch(src, spiProtocolPatch, auditRoot.resolve("spi-protocol.patch.log"));
+                        check(sha(src).equals(spiRepair.get("candidate_upstream_syntax_sha256")), "SPI protocol source differs");
+                    } else if (name.equals("SirVariableFromKtSymbol.kt")) {
+                        patch(src, spiVariablePatch, auditRoot.resolve("spi-variable.patch.log"));
+                        check(sha(src).equals(spiRepair.get("variable_candidate_upstream_syntax_sha256")), "SPI variable source differs");
+                    } else if (name.equals("SirFunctionFromKtSymbol.kt")) {
+                        patch(src, spiFunctionPatch, auditRoot.resolve("spi-function.patch.log"));
+                        check(sha(src).equals(spiRepair.get("function_candidate_upstream_syntax_sha256")), "SPI function source differs");
+                    }
+                    updatedSources.put(name, Files.readAllBytes(src));
+                }
+                write(in, normalizeSource(Files.readString(src)));
+                if (variant.equals("candidate")) {
+                    if (name.equals("SirProtocolFromKtSymbol.kt")) check(sha(in).equals(spiRepair.get("candidate_normalized_sha256")), "SPI protocol normalized source differs");
+                    else if (name.equals("SirVariableFromKtSymbol.kt")) check(sha(in).equals(spiRepair.get("variable_candidate_normalized_sha256")), "SPI variable normalized source differs");
+                    else if (name.equals("SirFunctionFromKtSymbol.kt")) check(sha(in).equals(spiRepair.get("function_candidate_normalized_sha256")), "SPI function normalized source differs");
+                }
+                inputs.add(in);
+            }
+            Path cls = auditRoot.resolve("lightclasses/" + variant + "/classes"), canon = auditRoot.resolve("lightclasses/" + variant + "/canonical");
+            Files.createDirectories(cls); Files.createDirectories(canon);
+            c.run(compiler(bootstrap, cp, parent, output.resolve("tmp"), "org.jetbrains.kotlin:sir-light-classes", inputs, cls, true), auditRoot.resolve("lightclasses/" + variant + "/compile.log"));
+            canonical(auditCp, cls, canon, classInventory(cls), auditRoot.resolve("lightclasses/" + variant + "/attributes.log"));
+        }
+        List<String> lcBaseEntries = classInventory(auditRoot.resolve("lightclasses/baseline/classes"));
+        check(classInventory(auditRoot.resolve("lightclasses/candidate/classes")).equals(lcBaseEntries), "Lightclasses inventory changed");
+        check(differences(lcBaseEntries, auditRoot.resolve("lightclasses/baseline/canonical"), auditRoot.resolve("lightclasses/candidate/canonical"))
+                .equals(strings(spiRepair.get("changed_classes"))), "Unexpected lightclasses delta");
+
+        // 4. Parent baseline identity & reviewed candidate hashes
+        Map<String, Object> classModules = m(repair.get("class_modules")), selectedHashes = m(repair.get("selected_non_debug_sha256"));
+        Set<String> addedSet = Set.copyOf(strings(repair.get("added_classes")));
+        check(classModules.keySet().equals(selectedHashes.keySet()), "km5 class module keys mismatch");
+        List<String> existingSelected = classModules.keySet().stream().filter(name -> !addedSet.contains(name)).sorted().toList();
+        Path parentClasses = auditRoot.resolve("parent-classes"), parentCanon = auditRoot.resolve("parent-canonical");
+        Files.createDirectories(parentClasses); Files.createDirectories(parentCanon);
+        for (String entry : existingSelected) write(safe(parentClasses, entry), entry(parent, entry));
+        canonical(auditCp, parentClasses, parentCanon, existingSelected, auditRoot.resolve("parent-attributes.log"));
+
+        Map<String, byte[]> original = entries(parent), contents = new TreeMap<>(original);
+        for (Map.Entry<String, Object> sel : classModules.entrySet()) {
+            String entry = sel.getKey(), modName = s(sel.getValue());
+            Path unitVariantRoot = switch (modName) {
+                case "org.jetbrains.kotlin:sir-providers" -> auditRoot.resolve("providers/%s/published");
+                case "org.jetbrains.kotlin_sir-providers" -> auditRoot.resolve("providers/%s/rebuilt");
+                case "org.jetbrains.kotlin:sir-printer" -> auditRoot.resolve("printer/%s");
+                case "org.jetbrains.kotlin:sir-light-classes" -> auditRoot.resolve("lightclasses/%s");
+                default -> throw new IllegalArgumentException("Unknown module: " + modName);
+            };
+            Path baseCanon = Path.of(unitVariantRoot.toString().replace("%s", "baseline")).resolve("canonical/" + entry);
+            Path candCanon = Path.of(unitVariantRoot.toString().replace("%s", "candidate")).resolve("canonical/" + entry);
+            Path candCls = Path.of(unitVariantRoot.toString().replace("%s", "candidate")).resolve("classes/" + entry);
+            if (!addedSet.contains(entry)) {
+                check(Files.mismatch(parentCanon.resolve(entry), baseCanon) == -1, "Published baseline differs from km.4 parent: " + entry);
+            }
+            check(sha(candCanon).equals(selectedHashes.get(entry)), "Reviewed km5 candidate hash mismatch: " + entry);
+            contents.put(entry, Files.readAllBytes(candCls));
+        }
+
+        contents.put("META-INF/kotlinmania/inputs.lock.json", Files.readAllBytes(c.p("inputs.lock.json")));
+        contents.put("META-INF/kotlinmania/km5-source-lock.json", Files.readAllBytes(repairPath));
+        Path result = output.resolve(lock.get("artifact") + "-" + lock.get("version") + ".jar");
+        archive(result, contents);
+
+        Map<String, byte[]> rebuilt = entries(result);
+        check(rebuilt.keySet().containsAll(original.keySet()), "Parent archive entry removed");
+        Set<String> added = difference(rebuilt.keySet(), original.keySet());
+        check(added.equals(union(addedSet, Set.of("META-INF/kotlinmania/km5-source-lock.json"))), "Unexpected release additions: " + added);
+        List<String> changed = changed(original, rebuilt);
+        check(new TreeSet<>(changed).equals(union(new TreeSet<>(existingSelected), Set.of("META-INF/kotlinmania/inputs.lock.json"))), "Unexpected release delta: " + changed);
+        closure(output, result, worker, new ArrayList<>(classModules.keySet()));
+
+        Path sourceDirectory = output.resolve("candidate/sources"); Files.createDirectories(sourceDirectory);
+        for (Map<String, Object> row : rows(lock.get("sources"))) {
+            String name = s(row.get("name"));
+            byte[] data;
+            if (updatedSources.containsKey(name)) data = updatedSources.get(name);
+            else data = entry(parentSources, s(row.get("path")));
+            check(digest(data).equals(row.get("candidate_sha256")), "Complete release source mismatch: " + name);
+            write(safe(sourceDirectory, name), data);
+        }
+        writeJson(output.resolve("build-result.json"), obj("artifact", result.getFileName().toString(), "sha256", sha(result), "changed_entries", changed,
+                "added_entries", new ArrayList<>(added), "removed_file_entries", List.of(), "base_component_sha256", repair.get("base_component_sha256"),
+                "class_deltas", selectedHashes, "all_non_debug_class_attributes_match_reviewed_candidate", true,
+                "reference_closure_sha256", sha(output.resolve("reference-closure.json")), "native_header_sha256", m(lock.get("native_header")).get("candidate_sha256")));
         System.out.println(result + " " + sha(result));
     }
 

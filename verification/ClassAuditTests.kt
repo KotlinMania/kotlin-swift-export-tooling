@@ -34,7 +34,7 @@ fun main() {
         auditFixture(debug = "not a source map"),
     )
     invalid.forEach { check(runCatching { runtimeClass(it) }.isFailure) }
-    listOf("AsStringArray.kt", "AsStringArrayObjC.kt", "Types.kt", "SirCustomTypeTranslatorImpl.kt", "SirSession.kt", "SirInitFromKtSymbol.kt", "SirProtocolFromKtSymbol.kt", "lazyWithSessions.kt").forEach { source ->
+    listOf("AsStringArray.kt", "AsStringArrayObjC.kt", "Types.kt", "SirCustomTypeTranslatorImpl.kt", "SirSession.kt", "SirInitFromKtSymbol.kt", "SirProtocolFromKtSymbol.kt", "KotlinFileGenerator.kt", "lazyWithSessions.kt").forEach { source ->
         check(valid.contentEquals(runtimeClass(auditFixture(debug = "SMAP\n$source\nKotlin\n*E\n"))))
     }
     check(runCatching { runtimeClass(auditFixture(debug = "SMAP\nUnknown.kt\nKotlin\n*E\n")) }.isFailure)

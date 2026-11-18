@@ -30,7 +30,7 @@ jobs:
         run: |
           tools/producer build --output build/reproduction-a --cache build/inputs
           tools/producer build --output build/reproduction-b --cache build/inputs
-          cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.4.jar build/reproduction-b/swift-export-embeddable-2.4.20-km.4.jar
+          cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.5.jar build/reproduction-b/swift-export-embeddable-2.4.20-km.5.jar
           tools/producer distribution --build build/reproduction-a --output build/distribution-a
           tools/producer distribution --build build/reproduction-b --output build/distribution-b
           tools/producer check
@@ -41,8 +41,8 @@ jobs:
         run: tools/producer download-native-sdk --output build/official-sdk
       - name: Prepare SDK in Java from immutable published helper data
         run: |
-          shasum -a 256 build/distribution-a/swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip > build/helper-archive-before.txt
-          tools/producer prepare-native-sdk --source build/official-sdk/kotlin-native-prebuilt-macos-aarch64-2.4.20 --destination build/native-sdk --receipt build/native-sdk-audit.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip
+          shasum -a 256 build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip > build/helper-archive-before.txt
+          tools/producer prepare-native-sdk --source build/official-sdk/kotlin-native-prebuilt-macos-aarch64-2.4.20 --destination build/native-sdk --receipt build/native-sdk-audit.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip
           shasum -a 256 -c build/helper-archive-before.txt
       - uses: actions/checkout@v7
         with:
@@ -54,13 +54,13 @@ jobs:
           distribution: zulu
           java-version: '21'
       - name: Real Native link and three unchanged Swift behaviors
-        run: tools/producer consumer --consumer build/consumer-source --output build/native-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip
+        run: tools/producer consumer --consumer build/consumer-source --output build/native-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip
       - name: Typed Array ownership and real Swift behavior
-        run: tools/producer array-consumer --output build/array-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip
+        run: tools/producer array-consumer --output build/array-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip
       - name: Checked ByteArray constructors and boundary rejection
-        run: tools/producer bytearray-consumer --output build/bytearray-consumer --configuration Debug --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip --gradle-cache-seed build/array-consumer/gradle-home --konan-cache-seed build/array-consumer/konan-data --gradle "$(command -v gradle)"
+        run: tools/producer bytearray-consumer --output build/bytearray-consumer --configuration Debug --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip --gradle-cache-seed build/array-consumer/gradle-home --konan-cache-seed build/array-consumer/konan-data --gradle "$(command -v gradle)"
       - name: Recursive Foundation collection Native and Swift behavior
-        run: tools/producer collection-consumer --output build/collection-consumer --configuration Debug --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip --gradle-cache-seed build/array-consumer/gradle-home --konan-cache-seed build/array-consumer/konan-data --gradle "$(command -v gradle)"
+        run: tools/producer collection-consumer --output build/collection-consumer --configuration Debug --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip --gradle-cache-seed build/array-consumer/gradle-home --konan-cache-seed build/array-consumer/konan-data --gradle "$(command -v gradle)"
       - name: Preserve all proof and first failure
         if: always()
         uses: actions/upload-artifact@v7

@@ -2,9 +2,14 @@
 
 Version-pinned repairs for Kotlin/Native's direct Swift export pipeline. This is host compiler tooling, not a Kotlin Multiplatform application dependency. Kotlin/Native still produces native KLIBs and ARM64 machine code; Swift compiles and calls the generated bindings directly.
 
-The release coordinate is `io.github.kotlinmania:swift-export-embeddable:2.4.20-km.4`. Release availability is established by the tagged release and independently retrieved Maven artifacts, not by a locally built file. The source branch and earlier diagnostic receipts alone are not publication evidence.
+The release coordinate is `io.github.kotlinmania:swift-export-embeddable:2.4.20-km.5`. Release availability is established by the tagged release and independently retrieved Maven artifacts, not by a locally built file. The source branch and earlier diagnostic receipts alone are not publication evidence.
 
-Version `2.4.20-km.4` adds recursive Foundation identity conversion for String lists and String-keyed dictionaries, including `Map<String, List<String>>`. The isolated source candidate passed eleven actual Native/Swift behaviors; see [the exact evidence and checker qualification](verification/FOUNDATION_COLLECTIONS.md). Release availability and portable reproduction require their own final artifact checks.
+Version `2.4.20-km.5` builds on `2.4.20-km.4` and adds:
+- protocol SPI default witness exclusion, empty `Swift.Never` abstract setter bodies, and deprecated reverse bridge call suppression (`producer/protocol-spi-defaults/`),
+- normalized signed/unsigned `NSNumber` bridging for nullable unsigned integers (`UByte?`, `UShort?`, `UInt?`, `ULong?`) (`producer/nullable-unsigned/`),
+- removal of redundant callback `as! [Any]` casts in `AsNSArray` (`producer/km5/`),
+- reverse collection bridge `Any -> [String]` casting in `SirBridgeProviderImpl` (`producer/reverse-collection-cast/`), and
+- file-level `DEPRECATION` suppression in `KotlinBridgePrinter` so bridges referencing `@Deprecated(WARNING)` classes, constructors, casts, and functions compile under `-Werror` while preserving `@Deprecated` and `@available(*, deprecated)` (`producer/deprecation-bridge/`).
 
 It retains km.3's one-step typed `ByteArray` constructors with unchanged public Swift signatures. The constructor fixture exercises six Swift behavior cases and seven C boundary processes, including checked bounds and receiver rejection. Other primitive-array constructors are unchanged. Every product library needs its own actual published-input behavior checks; producer fixture results are not fleet acceptance.
 
@@ -22,7 +27,7 @@ Use the published version only on the exporter tool configuration. Keep KGP, Nat
 configurations.configureEach {
     if (name == "swiftExportClasspath") {
         dependencies.add(project.dependencies.create(
-            "io.github.kotlinmania:swift-export-embeddable:2.4.20-km.4"
+            "io.github.kotlinmania:swift-export-embeddable:2.4.20-km.5"
         ))
     }
 }
@@ -66,12 +71,12 @@ The exporter alone is insufficient: the matching Native SDK needs the reviewed r
 ```sh
 mkdir -p build/native-sdk
 tools/producer prepare-native-sdk \
-  --helper build/distribution-a/swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip \
+  --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip \
   --source "$OFFICIAL_KOTLIN_NATIVE_2_4_20_HOME" \
-  --destination "$PWD/build/native-sdk/kotlin-native-2.4.20-km.4" \
+  --destination "$PWD/build/native-sdk/kotlin-native-2.4.20-km.5" \
   --receipt "$PWD/build/native-sdk/input-audit.json"
 ./gradlew embedSwiftExportForXcode \
-  -Pkotlin.native.home="$PWD/build/native-sdk/kotlin-native-2.4.20-km.4"
+  -Pkotlin.native.home="$PWD/build/native-sdk/kotlin-native-2.4.20-km.5"
 ```
 
 Keep Native automatic dependency caches outside that SDK copy. The compiler's
@@ -101,8 +106,8 @@ Corrected header SHA256: `99186d1dd029a8ba5b66dae390a3aec0d6d0e5293eff641d85daab
 ```sh
 tools/producer build --output build/reproduction-a --cache build/inputs
 tools/producer build --output build/reproduction-b --cache build/inputs
-cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.4.jar \
-    build/reproduction-b/swift-export-embeddable-2.4.20-km.4.jar
+cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.5.jar \
+    build/reproduction-b/swift-export-embeddable-2.4.20-km.5.jar
 tools/producer distribution --build build/reproduction-a --output build/distribution-a
 tools/producer distribution --build build/reproduction-b --output build/distribution-b
 tools/producer check-distribution --distribution build/distribution-a --comparison build/distribution-b

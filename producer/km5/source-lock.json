@@ -1,0 +1,82 @@
+{
+  "version": "2.4.20-km.5",
+  "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "base_component": "swift-export-embeddable-2.4.20-km.4.jar",
+  "base_component_sha256": "4240be980f3a94bbb250bcf34d73a9b9585d73296edf09fe42bdf494377b0310",
+  "parent_sources": "swift-export-embeddable-2.4.20-km.4-sources.jar",
+  "parent_sources_sha256": "71f0cf5002ce3e12cba89a07b42b18567b7b96bd005fe6debc83ff2330ff16bb",
+  "providers_sources": {
+    "TypeBridging.kt": {
+      "archive_entry": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
+      "sha256": "82ea975fb2948ab0aaffa6def7de064dd3710c100868121d50c83335cbeedbf2",
+      "patch": "producer/km5/TypeBridging.kt.patch",
+      "patch_sha256": "456d0bb81bd3b23152c82fb1cedc0814b6a6f9bbd980def3723b588b1993cdca",
+      "candidate_source_sha256": "33cb5fb4e14da16b6b0748953e8fc295570539761569765c0abf6653a2ed3563",
+      "candidate_normalized_sha256": "d6142e088dfcd70babc717fe3ffb2ad0464df0fff44e2094b0405eb946d2ac1a"
+    },
+    "SirBridgeProviderImpl.kt": {
+      "archive_entry": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirBridgeProviderImpl.kt",
+      "sha256": "be7702ac46f20d52d5ea22c8f749aed75a231deffa206fd184831bd6f6524ac3",
+      "patch": "producer/reverse-collection-cast/SirBridgeProviderImpl.kt.patch",
+      "patch_sha256": "03c6d77a9d0e98963f99a16a8f42e1309d38693d107ba8c23bdcf7f56886f02c",
+      "candidate_source_sha256": "38321ebd78fd535c7304e4d11362fb968beb93c288030c674db4562d08bf4035",
+      "candidate_normalized_sha256": "70296f4f4ede3555a96b064d870600b86ad8502ed4e58e3c21ef30b5d76b39f4"
+    },
+    "Types.kt": {
+      "archive_entry": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Types.kt",
+      "sha256": "eb3f90b3f1235872b1a5a815ffa152395d152ace1204dbae2e230ffc7d5c9e5d"
+    },
+    "SirSession.kt": {
+      "archive_entry": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/SirSession.kt",
+      "sha256": "217aebc0a2afe9ae831bf0160951c64867f6cc72e800a2dca7b1f7e43ec6df31"
+    },
+    "SirCustomTypeTranslatorImpl.kt": {
+      "archive_entry": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/SirCustomTypeTranslatorImpl.kt",
+      "sha256": "bb28c740377368f301837e15cdd7fa71b929ceb0fe17b14b08f0000b9ed07be1"
+    },
+    "AsStringArray.kt": {
+      "archive_entry": "producer/arrays/AsStringArray.kt",
+      "sha256": "b28dd7c1b195b0f61060e64ef7d907c30c738c4d49ee0536f8b13d25461a456a"
+    },
+    "AsStringArrayObjC.kt": {
+      "archive_entry": "producer/arrays/AsStringArrayObjC.kt",
+      "sha256": "2b4736d32c90c20c1d2ef701ea587ad811a87af267f808c2ae5e3ad53dcd2125"
+    }
+  },
+  "printer_source": {
+    "name": "KotlinFileGenerator.kt",
+    "path": "native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/KotlinFileGenerator.kt",
+    "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/KotlinFileGenerator.kt",
+    "sha256": "f11ac0bf2bb261a94ebf547ff95edeae3254fb85adaf72e3f1345248f2f3278d",
+    "patch": "producer/deprecation-bridge/KotlinFileGenerator.kt.patch",
+    "patch_sha256": "526ccb7e8234050f5f405e3d8e5d3991c504a26408cf21f82fe90046f964222e",
+    "candidate_source_sha256": "1c08f8e082c1146ebfe7f3248b927c35bf18b168282dd6ad3e5e1a49aa588b52",
+    "candidate_normalized_sha256": "1c08f8e082c1146ebfe7f3248b927c35bf18b168282dd6ad3e5e1a49aa588b52"
+  },
+  "protocol_spi_defaults_lock": "producer/protocol-spi-defaults/source-lock.json",
+  "added_classes": [
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSNumber$inKotlinSources$2.class"
+  ],
+  "class_modules": {
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray$inSwiftSources$1.class": "org.jetbrains.kotlin_sir-providers",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSNumber$inKotlinSources$2.class": "org.jetbrains.kotlin:sir-providers",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSNumber.class": "org.jetbrains.kotlin:sir-providers",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/BridgeFunctionDescriptor.class": "org.jetbrains.kotlin_sir-providers",
+    "org/jetbrains/sir/lightclasses/nodes/SirAbstractGetter.class": "org.jetbrains.kotlin:sir-light-classes",
+    "org/jetbrains/sir/lightclasses/nodes/SirAbstractSetter.class": "org.jetbrains.kotlin:sir-light-classes",
+    "org/jetbrains/sir/lightclasses/nodes/SirAuxiliaryProtocolDeclarationsFromKtSymbol$special$$inlined$lazyWithSessions$1.class": "org.jetbrains.kotlin:sir-light-classes",
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.class": "org.jetbrains.kotlin:sir-light-classes",
+    "org/jetbrains/sir/printer/impl/KotlinBridgePrinter.class": "org.jetbrains.kotlin:sir-printer"
+  },
+  "selected_non_debug_sha256": {
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray$inSwiftSources$1.class": "aa77dafb0844262a0fa7cb2e766bd06fc8ef0644499106e6b4c8054e3c328137",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSNumber$inKotlinSources$2.class": "0d2e2306e9f5a9a9a695e105f5e4e0ddcf2f17d5e7a9058df1cfb1f936563001",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSNumber.class": "771ef9be515f5dda07bf63e76bbd858d891bf5200732c1ea74069abd3c423ca9",
+    "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/BridgeFunctionDescriptor.class": "b8705c733925c88958aaf2751740c97a69a33b44bc8346733c14fafc8c454c31",
+    "org/jetbrains/sir/lightclasses/nodes/SirAbstractGetter.class": "9aae424c4ac7616753b31f67bf0d290b3c6fb26f1f9f60ede00a795fa76314e9",
+    "org/jetbrains/sir/lightclasses/nodes/SirAbstractSetter.class": "67779510a3a05f36d8fa4479cda084adbd3ec26387549059f738f2668ae13b26",
+    "org/jetbrains/sir/lightclasses/nodes/SirAuxiliaryProtocolDeclarationsFromKtSymbol$special$$inlined$lazyWithSessions$1.class": "e701a5851040d588e7933acaa45a7be5b5a77f9b617770eb12228943b4d598f1",
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.class": "2a0df20997bf7ab17f6bafa40e650810d1bc920a313632698f7e9e0c98acfa84",
+    "org/jetbrains/sir/printer/impl/KotlinBridgePrinter.class": "7d4520c84cdd82b232c2db618f6dae773d13ccec00f81464c5a01fffd0ce80e9"
+  }
+}

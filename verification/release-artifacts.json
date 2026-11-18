@@ -1,13 +1,13 @@
 {
   "files": {
-    "swift-export-embeddable-2.4.20-km.4-javadoc.jar": "d30f5b2383bdded63ac3e510439bb03858c313ffc8c594e2b690befae74340aa",
-    "swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip": "620edd20d4ec5f47c47f7891e1aa088444e80b2b745d165cc820f349a670c370",
-    "swift-export-embeddable-2.4.20-km.4-sbom.json": "f713354c04f03dbb892129abbc8ec8b806f7a2d0df7bc8bd960b6f527ffa600f",
-    "swift-export-embeddable-2.4.20-km.4-sources.jar": "71f0cf5002ce3e12cba89a07b42b18567b7b96bd005fe6debc83ff2330ff16bb",
-    "swift-export-embeddable-2.4.20-km.4.jar": "4240be980f3a94bbb250bcf34d73a9b9585d73296edf09fe42bdf494377b0310",
-    "swift-export-embeddable-2.4.20-km.4.pom": "fbbb92d368396d1b886ec0a6b98d6f12ffc63ccce924d8b19e8acc5a1504b87a"
+    "swift-export-embeddable-2.4.20-km.5-javadoc.jar": "eb61836c148182257f92e90a7fb6262c3dbb0db91366419898f8ec5d9dfaaa36",
+    "swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip": "b91b9dff70e3abfc21780e9e1f1d4d1515c481fa8dc1717e43be669be16d2bb3",
+    "swift-export-embeddable-2.4.20-km.5-sbom.json": "4f585d11238717f07c6e9a6f70379ab33e485f3d4e3d9669c2afdd27ca12685b",
+    "swift-export-embeddable-2.4.20-km.5-sources.jar": "fe71d7390017d5f7026d664cd1b9151d25f32ccde28690af09f8d7c7bdfdc09e",
+    "swift-export-embeddable-2.4.20-km.5.jar": "09e12dc461b46ddebd0b5ff141f4d4a10a0e9e549c23d940a68700d6bf844dc2",
+    "swift-export-embeddable-2.4.20-km.5.pom": "776346f69ecedc0f5c22a625e753a465ec9d2db7a80fed60fbe380ba1dd0c8d9"
   },
-  "main_component_sha256": "4240be980f3a94bbb250bcf34d73a9b9585d73296edf09fe42bdf494377b0310",
+  "main_component_sha256": "09e12dc461b46ddebd0b5ff141f4d4a10a0e9e549c23d940a68700d6bf844dc2",
   "native_header_sha256": "99186d1dd029a8ba5b66dae390a3aec0d6d0e5293eff641d85daab5e212723c3",
   "native_sdk_binaries_included": false,
   "rust_sources_included": false

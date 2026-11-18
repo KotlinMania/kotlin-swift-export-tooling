@@ -16,7 +16,7 @@ plugins {
 }
 
 group = "io.github.kotlinmania"
-version = "2.4.20-km.4"
+version = "2.4.20-km.5"
 val releaseCoordinate = "${project.group}:swift-export-embeddable:${project.version}"
 
 val distributionDirectory = providers.gradleProperty("distributionDirectory")
