@@ -3,5 +3,4 @@
 /buildSrc/build/
 .DS_Store
 .idea/
-maven.properties
 verifier.properties
