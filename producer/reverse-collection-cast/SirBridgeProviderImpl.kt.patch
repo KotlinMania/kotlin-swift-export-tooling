@@ -1,0 +1,34 @@
+--- a/SirBridgeProviderImpl.kt
++++ b/SirBridgeProviderImpl.kt
+@@ -585,7 +585,14 @@
+         val convertedParamExprs = parameters.map { param ->
+             val bridge = param.bridge
+             require(bridge is BidirectionalBridge) { "Parameter bridge must be bidirectional" }
+-            bridge.inSwiftSources.kotlinToSwift(typeNamer, param.name.swiftIdentifier)
++            val name = param.name.swiftIdentifier
++            val converted = bridge.inSwiftSources.kotlinToSwift(typeNamer, name)
++            val collection = bridge is Bridge.AsNSCollection ||
++                    (bridge is Bridge.AsOptionalWrapper && bridge.wrappedObject is Bridge.AsNSCollection)
++            val inputType = bridge.cType.toSwiftTypeName()
++            if (collection && converted == name && (inputType == "Any" || inputType == "Any?")) {
++                "$name as! ${typeNamer.swiftFqName(bridge.swiftType)}"
++            } else converted
+         }
+         val callExpr = swiftDynamicCall(if (selfBridge != null) "_self" else selfConversion, convertedParamExprs)
+ 
+@@ -726,7 +733,14 @@
+             val convertedParamExprs = parameters.map { param ->
+                 val bridge = param.bridge
+                 require(bridge is BidirectionalBridge) { "Parameter bridge must be bidirectional" }
+-                bridge.inSwiftSources.kotlinToSwift(typeNamer, param.name.swiftIdentifier)
++                val name = param.name.swiftIdentifier
++                val converted = bridge.inSwiftSources.kotlinToSwift(typeNamer, name)
++                val collection = bridge is Bridge.AsNSCollection ||
++                        (bridge is Bridge.AsOptionalWrapper && bridge.wrappedObject is Bridge.AsNSCollection)
++                val inputType = bridge.cType.toSwiftTypeName()
++                if (collection && converted == name && (inputType == "Any" || inputType == "Any?")) {
++                    "$name as! ${typeNamer.swiftFqName(bridge.swiftType)}"
++                } else converted
+             }
+ 
+             if (selfBridge != null) {

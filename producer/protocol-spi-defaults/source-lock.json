@@ -1,0 +1,64 @@
+{
+  "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "base_component_sha256": "4240be980f3a94bbb250bcf34d73a9b9585d73296edf09fe42bdf494377b0310",
+  "native_version": "2.4.21",
+  "native_compiler_sha256": "bad46f043b98d14c4150d654ea98996cabf71e7ad87ea3a57538956164443105",
+  "serialization_klib": {
+    "name": "kotlinx-serialization-core-macosarm64-1.11.0.klib",
+    "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-macosarm64/1.11.0/kotlinx-serialization-core-macosarm64-1.11.0.klib",
+    "sha256": "551d11833d5611afe63dac02c05dd21611fe5f43d002e014cbe61b380551e3e4"
+  },
+  "sources": [
+    {
+      "name": "SirProtocolFromKtSymbol.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirProtocolFromKtSymbol.kt",
+      "sha256": "c4120673b1720f24d81fddeb412d73e3ba70da3970d4a8d952b1a1fa3c3cf19e"
+    },
+    {
+      "name": "SirVariableFromKtSymbol.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirVariableFromKtSymbol.kt",
+      "sha256": "b12a80d3d51b279e35006126618233ba478da246cfc8de101b321f430178405d"
+    },
+    {
+      "name": "SirFunctionFromKtSymbol.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.kt",
+      "sha256": "1b5e24dc1792b6b3e991c9fc3391f1f3f695fdb3acb631605a1543b8ae0ec05e"
+    },
+    {
+      "name": "TypeTranslationUtils.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/utils/TypeTranslationUtils.kt",
+      "sha256": "75a993c4b8e09ccf795c531cee5ff711b47e7241be03fe03dae9823e87617078"
+    },
+    {
+      "name": "AnnotationUtils.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/utils/AnnotationUtils.kt",
+      "sha256": "d419ac6b4120c6b50e4e708af54b905d6291390e93ca922b2ef7a07012e4f367"
+    }
+  ],
+  "patch": "producer/protocol-spi-defaults/SirProtocolFromKtSymbol.kt.patch",
+  "patch_sha256": "8a3801049bfe9c93e2cfa27c67d86996e4e137da44b7a906a512dd3ed9862867",
+  "candidate_upstream_syntax_sha256": "2959171f4572411f08b8a2764ef2aa91049191cea668047ba810edef561414b3",
+  "candidate_normalized_sha256": "2959171f4572411f08b8a2764ef2aa91049191cea668047ba810edef561414b3",
+  "variable_patch": "producer/protocol-spi-defaults/SirVariableFromKtSymbol.kt.patch",
+  "variable_patch_sha256": "63ed1a45059f7a42132e37456040471c5e87ca61f4b594b075c04791ebd98fc6",
+  "variable_candidate_upstream_syntax_sha256": "7b16f194e5a8c54760fb94f9a613e513c5c3228133d5ec042bf4920eccdc434d",
+  "variable_candidate_normalized_sha256": "7b16f194e5a8c54760fb94f9a613e513c5c3228133d5ec042bf4920eccdc434d",
+  "function_patch": "producer/protocol-spi-defaults/SirFunctionFromKtSymbol.kt.patch",
+  "function_patch_sha256": "ec14c27b398ba79efc9634e5302f17ea16580cea8ae7ac4dd326c08d20591dbd",
+  "function_candidate_upstream_syntax_sha256": "47763c79cdfa6b0e601805c3bc89d737aa495cf9ab2a0ace7529e721daeefd45",
+  "function_candidate_normalized_sha256": "e10c3d4b97af18038acd21eec0cbb237677ec5cd6b0c51c9437eebd3e532d4f6",
+  "changed_classes": [
+    "org/jetbrains/sir/lightclasses/nodes/SirAbstractGetter.class",
+    "org/jetbrains/sir/lightclasses/nodes/SirAbstractSetter.class",
+    "org/jetbrains/sir/lightclasses/nodes/SirAuxiliaryProtocolDeclarationsFromKtSymbol$special$$inlined$lazyWithSessions$1.class",
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.class"
+  ],
+  "added_classes": [],
+  "candidate_attributes": {
+    "org/jetbrains/sir/lightclasses/nodes/SirAbstractGetter.class": "9aae424c4ac7616753b31f67bf0d290b3c6fb26f1f9f60ede00a795fa76314e9",
+    "org/jetbrains/sir/lightclasses/nodes/SirAbstractSetter.class": "67779510a3a05f36d8fa4479cda084adbd3ec26387549059f738f2668ae13b26",
+    "org/jetbrains/sir/lightclasses/nodes/SirAuxiliaryProtocolDeclarationsFromKtSymbol$special$$inlined$lazyWithSessions$1.class": "e701a5851040d588e7933acaa45a7be5b5a77f9b617770eb12228943b4d598f1",
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.class": "2a0df20997bf7ab17f6bafa40e650810d1bc920a313632698f7e9e0c98acfa84"
+  },
+  "scope": "Protocol auxiliary declarations omit SPI fatalError traps for functions already present in witnessSources (matching spiVariableTraps), SirAbstractSetter emits an empty setter body when the variable type translates to uninhabited Swift.Never, and deprecated forward bridge calls suppress DEPRECATION at the call expression without altering shared helper bridges."
+}

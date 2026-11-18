@@ -1,0 +1,42 @@
+--- a/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirVariableFromKtSymbol.kt
++++ b/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirVariableFromKtSymbol.kt
+@@ -215,7 +215,8 @@
+         val args = argNames
+         val expectedParameters = if (extensionReceiverParameter != null) 1 else 0
+         require(args.size == expectedParameters) { "Received an extension getter $name with ${args.size} parameters instead of a $expectedParameters, aborting" }
+-        buildCall("")
++        val call = buildCall("")
++        if (variable?.effectiveReverseBridgeDeprecation() != null) "@kotlin.Suppress(\"DEPRECATION\") run { $call }" else call
+     }
+ 
+     override val bridges: List<SirBridge> by lazyWithSessions {
+@@ -322,7 +323,8 @@
+         val args = argNames
+         val expectedParameters = if (extensionReceiverParameter != null) 2 else 1
+         require(args.size == expectedParameters) { "Received an extension getter $name with ${args.size} parameters instead of a $expectedParameters, aborting" }
+-        buildCall(" = ${args.last()}")
++        val call = buildCall(" = ${args.last()}")
++        if (variable?.effectiveReverseBridgeDeprecation() != null) "@kotlin.Suppress(\"DEPRECATION\") run { $call }" else call
+     }
+ 
+     override val bridges: List<SirBridge> by lazyWithSessions {
+@@ -353,7 +355,18 @@
+ 
+     override var body: SirFunctionBody?
+         set(value) {}
+-        get() = sirSession.withSessions { buildAccessorBody(bridgeProxy ?: return@withSessions null, variable, isUnavailable) }
++        get() = sirSession.withSessions {
++            val proxy = bridgeProxy
++            if (proxy == null) {
++                if (variable?.type?.let { it is SirUnsupportedType || it is SirErrorType || it == SirType.never } == true) {
++                    SirFunctionBody(emptyList())
++                } else {
++                    null
++                }
++            } else {
++                buildAccessorBody(proxy, variable, isUnavailable)
++            }
++        }
+ 
+     /** The `_direct` forward bridge + direct-dispatch setter body for an interface default-property witness. */
+     context(_: KaSession, _: SirSession)

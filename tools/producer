@@ -1,0 +1,24 @@
+#!/bin/sh
+set -eu
+
+producer_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$producer_root"
+mkdir -p build/tmp/producer-launcher
+export TMPDIR="$producer_root/build/tmp/producer-launcher"
+export TMP="$TMPDIR"
+export TEMP="$TMPDIR"
+export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-Djava.io.tmpdir=$TMPDIR"
+
+if [ "${1:-}" = "check" ]; then
+    shift
+    exec ./gradlew -p buildSrc checkProducer --offline --no-daemon --max-workers=2 --no-configuration-cache --console=plain "$@"
+fi
+
+./gradlew -p buildSrc exportProducerClasspath --offline --no-daemon --max-workers=2 --no-configuration-cache --console=plain
+producer_classpath=$(cat buildSrc/build/producer-classpath.txt)
+if [ -n "${JAVA_HOME:-}" ]; then
+    producer_java="$JAVA_HOME/bin/java"
+else
+    producer_java=java
+fi
+exec "$producer_java" -cp "$producer_classpath" io.github.kotlinmania.build.ProducerCli --root "$producer_root" "$@"

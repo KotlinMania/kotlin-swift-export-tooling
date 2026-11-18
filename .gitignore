@@ -1,4 +1,6 @@
 .gradle/
-build/
-__pycache__/
-*.pyc
+/build/
+/buildSrc/build/
+.DS_Store
+.idea/
+verifier.properties

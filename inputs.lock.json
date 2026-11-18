@@ -1,5 +1,5 @@
 {
-  "version": "2.4.20-km.4",
+  "version": "2.4.20-km.5",
   "group": "io.github.kotlinmania",
   "artifact": "swift-export-embeddable",
   "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
@@ -10,7 +10,7 @@
       "name": "SirBridgeProviderImpl.kt",
       "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirBridgeProviderImpl.kt",
       "baseline_sha256": "5f3573d81732efd98290376520d8b37c4b668251fa9aa74a82940a19ca8115ea",
-      "candidate_sha256": "be7702ac46f20d52d5ea22c8f749aed75a231deffa206fd184831bd6f6524ac3",
+      "candidate_sha256": "38321ebd78fd535c7304e4d11362fb968beb93c288030c674db4562d08bf4035",
       "patch": "patches/SirBridgeProviderImpl.kt.patch",
       "patch_sha256": "43d4d21cecfd0a84e3b200bb037dd18463f6ee70b6220780286ed09414b87486",
       "kind": "providers",
@@ -106,7 +106,7 @@
       "path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
       "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
       "baseline_sha256": "7ae7399f7359e7661695beec2239b21b13b277e7ebe67740fb65e2a3293246ef",
-      "candidate_sha256": "82ea975fb2948ab0aaffa6def7de064dd3710c100868121d50c83335cbeedbf2",
+      "candidate_sha256": "33cb5fb4e14da16b6b0748953e8fc295570539761569765c0abf6653a2ed3563",
       "patch": "patches/arrays/TypeBridging.kt.patch",
       "patch_sha256": "665388e95c42c094bf703ebc88041cd3de76a0f6a4ad4bd5cc2ca9743537f7c9",
       "kind": "array"
@@ -178,6 +178,54 @@
       "patch": "producer/byte-arrays/SirInitFromKtSymbol.kt.patch",
       "patch_sha256": "51e491c84dbac70d9bdf77e79ba61c194f5b31c84cc591758ce7733bcc18e923",
       "kind": "bytearray-init"
+    },
+    {
+      "name": "KotlinFileGenerator.kt",
+      "path": "native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/KotlinFileGenerator.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/KotlinFileGenerator.kt",
+      "baseline_sha256": "f11ac0bf2bb261a94ebf547ff95edeae3254fb85adaf72e3f1345248f2f3278d",
+      "candidate_sha256": "1c08f8e082c1146ebfe7f3248b927c35bf18b168282dd6ad3e5e1a49aa588b52",
+      "patch": "producer/deprecation-bridge/KotlinFileGenerator.kt.patch",
+      "patch_sha256": "526ccb7e8234050f5f405e3d8e5d3991c504a26408cf21f82fe90046f964222e",
+      "kind": "km5-printer"
+    },
+    {
+      "name": "SirProtocolFromKtSymbol.kt",
+      "path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirProtocolFromKtSymbol.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirProtocolFromKtSymbol.kt",
+      "baseline_sha256": "c4120673b1720f24d81fddeb412d73e3ba70da3970d4a8d952b1a1fa3c3cf19e",
+      "candidate_sha256": "2959171f4572411f08b8a2764ef2aa91049191cea668047ba810edef561414b3",
+      "patch": "producer/protocol-spi-defaults/SirProtocolFromKtSymbol.kt.patch",
+      "patch_sha256": "8a3801049bfe9c93e2cfa27c67d86996e4e137da44b7a906a512dd3ed9862867",
+      "kind": "km5-lightclasses"
+    },
+    {
+      "name": "SirVariableFromKtSymbol.kt",
+      "path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirVariableFromKtSymbol.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirVariableFromKtSymbol.kt",
+      "baseline_sha256": "b12a80d3d51b279e35006126618233ba478da246cfc8de101b321f430178405d",
+      "candidate_sha256": "7b16f194e5a8c54760fb94f9a613e513c5c3228133d5ec042bf4920eccdc434d",
+      "patch": "producer/protocol-spi-defaults/SirVariableFromKtSymbol.kt.patch",
+      "patch_sha256": "63ed1a45059f7a42132e37456040471c5e87ca61f4b594b075c04791ebd98fc6",
+      "kind": "km5-lightclasses"
+    },
+    {
+      "name": "SirFunctionFromKtSymbol.kt",
+      "path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.kt",
+      "baseline_sha256": "1b5e24dc1792b6b3e991c9fc3391f1f3f695fdb3acb631605a1543b8ae0ec05e",
+      "candidate_sha256": "47763c79cdfa6b0e601805c3bc89d737aa495cf9ab2a0ace7529e721daeefd45",
+      "patch": "producer/protocol-spi-defaults/SirFunctionFromKtSymbol.kt.patch",
+      "patch_sha256": "ec14c27b398ba79efc9634e5302f17ea16580cea8ae7ac4dd326c08d20591dbd",
+      "kind": "km5-lightclasses"
+    },
+    {
+      "name": "TypeTranslationUtils.kt",
+      "path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/utils/TypeTranslationUtils.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/utils/TypeTranslationUtils.kt",
+      "baseline_sha256": "75a993c4b8e09ccf795c531cee5ff711b47e7241be03fe03dae9823e87617078",
+      "candidate_sha256": "75a993c4b8e09ccf795c531cee5ff711b47e7241be03fe03dae9823e87617078",
+      "kind": "km5-lightclasses"
     }
   ],
   "tools": [
@@ -407,6 +455,26 @@
       "classifier": "sources",
       "url": "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.3/swift-export-embeddable-2.4.20-km.3-sources.jar",
       "sha256": "bd8657621ffbc7093e5c9b2b8f80c194a87c54cf3fe8e72da62609449cf81f0e"
+    },
+    {
+      "name": "swift-export-embeddable-2.4.20-km.4.jar",
+      "group": "io.github.kotlinmania",
+      "artifact": "swift-export-embeddable",
+      "version": "2.4.20-km.4",
+      "scope": "km5-parent",
+      "classifier": "",
+      "url": "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.4/swift-export-embeddable-2.4.20-km.4.jar",
+      "sha256": "4240be980f3a94bbb250bcf34d73a9b9585d73296edf09fe42bdf494377b0310"
+    },
+    {
+      "name": "swift-export-embeddable-2.4.20-km.4-sources.jar",
+      "group": "io.github.kotlinmania",
+      "artifact": "swift-export-embeddable",
+      "version": "2.4.20-km.4",
+      "scope": "km5-parent-sources",
+      "classifier": "sources",
+      "url": "https://repo.maven.apache.org/maven2/io/github/kotlinmania/swift-export-embeddable/2.4.20-km.4/swift-export-embeddable-2.4.20-km.4-sources.jar",
+      "sha256": "71f0cf5002ce3e12cba89a07b42b18567b7b96bd005fe6debc83ff2330ff16bb"
     }
   ],
   "selected_classes": {
@@ -723,5 +791,7 @@
   "bytearray_repair": "producer/byte-arrays/repair.lock.json",
   "bytearray_repair_sha256": "79a08b70f8dc79eb9bc5243397bff4d401513eea0833d3fba1306b1b7fcbcaf6",
   "collection_repair": "producer/collections/source-lock.json",
-  "collection_repair_sha256": "9ac36d237c4fecd0d5bfd24654db69c8f833a4a49e3c22659d4e4ea80a7cf8b9"
+  "collection_repair_sha256": "9ac36d237c4fecd0d5bfd24654db69c8f833a4a49e3c22659d4e4ea80a7cf8b9",
+  "km5_repair": "producer/km5/source-lock.json",
+  "km5_repair_sha256": "d944dfb8d49946a9e68ce0ac6e554b97088e0c8f682ebaf3311ac9057c19b7bb"
 }

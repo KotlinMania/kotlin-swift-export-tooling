@@ -1,0 +1,41 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+
+// Track the command-scoped compiler candidate as an actual Native task input.
+// This prevents Gradle from reusing a link made by a different compiler JAR.
+def script = gradle.startParameter.initScripts.find { it.name == 'native-writable-type-info-consumer.init.gradle' }
+if (script == null) throw new GradleException('Cannot locate Native metadata init script')
+def root = new File(script.parentFile, '../build/native-writable-type-info-acceptance-02').canonicalFile
+def receipt = new JsonSlurper().parse(new File(root, 'result.json'))
+def consumer = gradle.startParameter.currentDir.canonicalFile
+
+gradle.projectsEvaluated {
+    allprojects { project ->
+        if (project.projectDir.canonicalFile == consumer && project.plugins.hasPlugin('org.jetbrains.kotlin.multiplatform')) {
+            def homeArgument = gradle.startParameter.projectProperties['kotlin.native.home']
+            if (homeArgument == null || gradle.startParameter.projectProperties.containsKey('konan.data.dir')) {
+                throw new GradleException('Specify the isolated SDK using -Pkotlin.native.home with no conflicting konan.data.dir property')
+            }
+            def nativeHome = new File(homeArgument).canonicalFile
+            def ownedBuild = new File(script.parentFile, '../build').canonicalFile.toPath()
+            if (!nativeHome.toPath().startsWith(ownedBuild)) throw new GradleException('Native compiler candidate must belong to the producer build directory')
+            def compiler = new File(nativeHome, 'konan/lib/kotlin-native-compiler-embeddable.jar')
+            def sha = { File file -> MessageDigest.getInstance('SHA-256').digest(file.bytes).encodeHex().toString() }
+            if (sha(compiler) != receipt.compiler_sha256) throw new GradleException('Isolated Native compiler differs from audited candidate')
+            project.tasks.configureEach { task ->
+                def type = task.class.name
+                if (type.startsWith('org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile') ||
+                        type.startsWith('org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink')) {
+                    task.inputs.file(compiler).withPropertyName('reviewedNativeMetadataCompiler')
+                    task.doFirst {
+                        if (sha(compiler) != receipt.compiler_sha256) throw new GradleException('Native compiler changed during verification')
+                        new File(root, project.name + '-' + task.name + '-compiler.json').text = JsonOutput.prettyPrint(JsonOutput.toJson([
+                            task: task.path, type: type, compiler: compiler.absolutePath, sha256: sha(compiler)
+                        ])) + '\n'
+                    }
+                }
+            }
+        }
+    }
+}

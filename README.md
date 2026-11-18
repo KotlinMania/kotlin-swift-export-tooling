@@ -2,9 +2,14 @@
 
 Version-pinned repairs for Kotlin/Native's direct Swift export pipeline. This is host compiler tooling, not a Kotlin Multiplatform application dependency. Kotlin/Native still produces native KLIBs and ARM64 machine code; Swift compiles and calls the generated bindings directly.
 
-The release coordinate is `io.github.kotlinmania:swift-export-embeddable:2.4.20-km.4`. Release availability is established by the tagged release and independently retrieved Maven artifacts, not by a locally built file. The source branch and earlier diagnostic receipts alone are not publication evidence.
+The release coordinate is `io.github.kotlinmania:swift-export-embeddable:2.4.20-km.5`. Release availability is established by the tagged release and independently retrieved Maven artifacts, not by a locally built file. The source branch and earlier diagnostic receipts alone are not publication evidence.
 
-Version `2.4.20-km.4` adds recursive Foundation identity conversion for String lists and String-keyed dictionaries, including `Map<String, List<String>>`. The isolated source candidate passed eleven actual Native/Swift behaviors; see [the exact evidence and checker qualification](verification/FOUNDATION_COLLECTIONS.md). Release availability and portable reproduction require their own final artifact checks.
+Version `2.4.20-km.5` builds on `2.4.20-km.4` and adds:
+- protocol SPI default witness exclusion, empty `Swift.Never` abstract setter bodies, and deprecated reverse bridge call suppression (`producer/protocol-spi-defaults/`),
+- normalized signed/unsigned `NSNumber` bridging for nullable unsigned integers (`UByte?`, `UShort?`, `UInt?`, `ULong?`) (`producer/nullable-unsigned/`),
+- removal of redundant callback `as! [Any]` casts in `AsNSArray` (`producer/km5/`),
+- reverse collection bridge `Any -> [String]` casting in `SirBridgeProviderImpl` (`producer/reverse-collection-cast/`), and
+- file-level `DEPRECATION` suppression in `KotlinBridgePrinter` so bridges referencing `@Deprecated(WARNING)` classes, constructors, casts, and functions compile under `-Werror` while preserving `@Deprecated` and `@available(*, deprecated)` (`producer/deprecation-bridge/`).
 
 It retains km.3's one-step typed `ByteArray` constructors with unchanged public Swift signatures. The constructor fixture exercises six Swift behavior cases and seven C boundary processes, including checked bounds and receiver rejection. Other primitive-array constructors are unchanged. Every product library needs its own actual published-input behavior checks; producer fixture results are not fleet acceptance.
 
@@ -22,7 +27,7 @@ Use the published version only on the exporter tool configuration. Keep KGP, Nat
 configurations.configureEach {
     if (name == "swiftExportClasspath") {
         dependencies.add(project.dependencies.create(
-            "io.github.kotlinmania:swift-export-embeddable:2.4.20-km.4"
+            "io.github.kotlinmania:swift-export-embeddable:2.4.20-km.5"
         ))
     }
 }
@@ -61,16 +66,17 @@ Run the consumer with the same `-Dmaven.repo.local` path when using an isolated 
 
 ### Separate Native SDK header
 
-The exporter alone is insufficient: the matching Native SDK needs the reviewed retained-return declaration. Resolve the `native-sdk-helper` ZIP classifier of the same coordinate using normal dependency resolution, verify its checksum, then extract it into an owned project build directory. The helper contains Python source, a header patch, locked input metadata and licenses; it does not contain an SDK or Native binaries.
+The exporter alone is insufficient: the matching Native SDK needs the reviewed retained-return declaration. Resolve the `native-sdk-helper` ZIP classifier of the same coordinate using normal dependency resolution and retain it as a checksum-verified input in the project build directory. The Java build tools prepare the SDK from its locked metadata and header patch. The already-published km.4 archive includes historical interpreter source; Java verifies those immutable bytes in memory and never extracts or executes that source. It does not contain an SDK or Native binaries.
 
 ```sh
 mkdir -p build/native-sdk
-python3 build/swift-tooling-helper/scripts/prepare_native_sdk.py \
+tools/producer prepare-native-sdk \
+  --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip \
   --source "$OFFICIAL_KOTLIN_NATIVE_2_4_20_HOME" \
-  --destination "$PWD/build/native-sdk/kotlin-native-2.4.20-km.4" \
+  --destination "$PWD/build/native-sdk/kotlin-native-2.4.20-km.5" \
   --receipt "$PWD/build/native-sdk/input-audit.json"
 ./gradlew embedSwiftExportForXcode \
-  -Pkotlin.native.home="$PWD/build/native-sdk/kotlin-native-2.4.20-km.4"
+  -Pkotlin.native.home="$PWD/build/native-sdk/kotlin-native-2.4.20-km.5"
 ```
 
 Keep Native automatic dependency caches outside that SDK copy. The compiler's
@@ -98,11 +104,17 @@ Corrected header SHA256: `99186d1dd029a8ba5b66dae390a3aec0d6d0e5293eff641d85daab
 `inputs.lock.json` pins official Kotlin revision `890ac1d94fdb80eb85f0eeb5be5e4352df987b2f`, the official exporter, every source/patch and compiler dependency. Source patches are applied with no fuzzy context and checked before and after application. No full Kotlin source checkout or frozen Rust source is vendored.
 
 ```sh
-python3 scripts/build.py --output build/reproduction-a --cache build/inputs
-python3 scripts/build.py --output build/reproduction-b --cache build/inputs
-cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.4.jar \
-    build/reproduction-b/swift-export-embeddable-2.4.20-km.4.jar
+tools/producer build --output build/reproduction-a --cache build/inputs
+tools/producer build --output build/reproduction-b --cache build/inputs
+cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.5.jar \
+    build/reproduction-b/swift-export-embeddable-2.4.20-km.5.jar
+tools/producer distribution --build build/reproduction-a --output build/distribution-a
+tools/producer distribution --build build/reproduction-b --output build/distribution-b
+tools/producer check-distribution --distribution build/distribution-a --comparison build/distribution-b
+tools/producer check
 ```
+
+The launcher compiles the Java build tools with the pinned Gradle distribution and its bundled libraries. Java 21 is required for the build logic; no separate interpreter or third-party package manager is used. Generated files and temporary directories stay under this repository's `build/`. An optional `--seeds` JSON map from SHA256 to existing local files lets the compiler use verified binary caches directly, without copying SDK or toolchain caches; every selected file is still hashed and included in the compiler input audit. The build tools are also imported directly by the Gradle distribution gate. Current Java source fingerprints are recorded in separate provenance receipts. Reproducing the already-published km.4 artifacts retains their pinned release documentation and helper bytes; current usage instructions live here, and no frozen fingerprint is rewritten to accommodate the port.
 
 The build recompiles unmodified baselines and requires exact member descriptors/access flags and complete normalized instruction graphs. It rebuilds the selected producer classes from authoritative source, keeps unselected official classes unchanged, and checks all non-debug class attributes against reviewed fingerprints. Only source/line/local-variable debug maps and the exact validated invisible Kotlin SourceDebugExtension SMAP annotation are excluded from that comparison; annotations, Kotlin metadata, frames and executable instructions remain. Fail-closed auditor tests reject malformed/duplicate debug annotations and preserve actual field changes. Complete-source debug maps can differ from the earlier incremental diagnostic artifact; that raw mismatch is recorded rather than relabeled as byte equality.
 

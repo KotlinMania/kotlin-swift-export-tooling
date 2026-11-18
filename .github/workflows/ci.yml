@@ -12,6 +12,10 @@ jobs:
       - uses: actions/setup-java@v6.1.0
         with:
           distribution: zulu
+          java-version: '21'
+      - uses: actions/setup-java@v6.1.0
+        with:
+          distribution: zulu
           java-version: '25'
       - uses: gradle/actions/setup-gradle@v6.4.0
         with:
@@ -24,24 +28,22 @@ jobs:
           gradle --version
       - name: Build twice and verify exact source and class deltas
         run: |
-          python3 scripts/build.py --output build/reproduction-a --cache build/inputs
-          python3 scripts/build.py --output build/reproduction-b --cache build/inputs
-          cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.4.jar build/reproduction-b/swift-export-embeddable-2.4.20-km.4.jar
-          python3 -m unittest discover -s tests -v
-          python3 scripts/distribution.py --build build/reproduction-a --output build/distribution-a
-          python3 scripts/distribution.py --build build/reproduction-b --output build/distribution-b
-          python3 scripts/check_distribution.py --distribution build/distribution-a --comparison build/distribution-b
-          python3 scripts/stage_resolution.py --distribution build/distribution-a --repository build/resolution-repository
+          tools/producer build --output build/reproduction-a --cache build/inputs
+          tools/producer build --output build/reproduction-b --cache build/inputs
+          cmp build/reproduction-a/swift-export-embeddable-2.4.20-km.5.jar build/reproduction-b/swift-export-embeddable-2.4.20-km.5.jar
+          tools/producer distribution --build build/reproduction-a --output build/distribution-a
+          tools/producer distribution --build build/reproduction-b --output build/distribution-b
+          tools/producer check
+          tools/producer check-distribution --distribution build/distribution-a --comparison build/distribution-b
+          tools/producer stage-resolution --distribution build/distribution-a --repository build/resolution-repository
           gradle verifyWorkerPom --no-daemon --max-workers=2 --no-configuration-cache --console=plain
       - name: Retrieve matching official Native SDK
-        run: python3 scripts/download_native_sdk.py --output build/official-sdk
-      - name: Use the actual packaged helper
+        run: tools/producer download-native-sdk --output build/official-sdk
+      - name: Prepare SDK in Java from immutable published helper data
         run: |
-          mkdir build/helper
-          unzip -q build/distribution-a/swift-export-embeddable-2.4.20-km.4-native-sdk-helper.zip -d build/helper
-          shasum -a 256 build/helper/scripts/prepare_native_sdk.py > build/helper-source-before.txt
-          python3 build/helper/scripts/prepare_native_sdk.py --source build/official-sdk/kotlin-native-prebuilt-macos-aarch64-2.4.20 --destination build/native-sdk --receipt build/native-sdk-audit.json
-          shasum -a 256 -c build/helper-source-before.txt
+          shasum -a 256 build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip > build/helper-archive-before.txt
+          tools/producer prepare-native-sdk --source build/official-sdk/kotlin-native-prebuilt-macos-aarch64-2.4.20 --destination build/native-sdk --receipt build/native-sdk-audit.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip
+          shasum -a 256 -c build/helper-archive-before.txt
       - uses: actions/checkout@v7
         with:
           repository: KotlinMania/proc-macro2-kotlin
@@ -52,13 +54,13 @@ jobs:
           distribution: zulu
           java-version: '21'
       - name: Real Native link and three unchanged Swift behaviors
-        run: python3 scripts/consumer.py --consumer build/consumer-source --output build/native-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/helper/scripts/prepare_native_sdk.py
+        run: tools/producer consumer --consumer build/consumer-source --output build/native-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip
       - name: Typed Array ownership and real Swift behavior
-        run: python3 scripts/array_consumer.py --output build/array-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/helper/scripts/prepare_native_sdk.py
+        run: tools/producer array-consumer --output build/array-consumer --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip
       - name: Checked ByteArray constructors and boundary rejection
-        run: python3 scripts/bytearray_consumer.py --output build/bytearray-consumer --configuration Debug --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/helper/scripts/prepare_native_sdk.py --gradle-cache-seed build/array-consumer/gradle-home --konan-cache-seed build/array-consumer/konan-data --gradle "$(command -v gradle)"
+        run: tools/producer bytearray-consumer --output build/bytearray-consumer --configuration Debug --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip --gradle-cache-seed build/array-consumer/gradle-home --konan-cache-seed build/array-consumer/konan-data --gradle "$(command -v gradle)"
       - name: Recursive Foundation collection Native and Swift behavior
-        run: python3 scripts/collection_consumer.py --output build/collection-consumer --configuration Debug --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/helper/scripts/prepare_native_sdk.py --gradle-cache-seed build/array-consumer/gradle-home --konan-cache-seed build/array-consumer/konan-data --gradle "$(command -v gradle)"
+        run: tools/producer collection-consumer --output build/collection-consumer --configuration Debug --distribution build/distribution-a --cache build/inputs --sdk build/native-sdk --sdk-audit build/native-sdk-audit.json --sdk-download-audit build/official-sdk/download.json --helper build/distribution-a/swift-export-embeddable-2.4.20-km.5-native-sdk-helper.zip --gradle-cache-seed build/array-consumer/gradle-home --konan-cache-seed build/array-consumer/konan-data --gradle "$(command -v gradle)"
       - name: Preserve all proof and first failure
         if: always()
         uses: actions/upload-artifact@v7
@@ -70,7 +72,8 @@ jobs:
             build/distribution-a/
             build/resolved-worker.json
             build/native-sdk-audit.json
-            build/helper-source-before.txt
+            build/helper-archive-before.txt
+            build/*.java-provenance.json
             build/official-sdk/download.json
             build/native-consumer/*.json
             build/native-consumer/logs/
@@ -84,4 +87,5 @@ jobs:
             build/bytearray-consumer/native-boundary/*.log
             build/collection-consumer/*.json
             build/collection-consumer/logs/
+            build/distribution-*.java-provenance.json
           retention-days: 14

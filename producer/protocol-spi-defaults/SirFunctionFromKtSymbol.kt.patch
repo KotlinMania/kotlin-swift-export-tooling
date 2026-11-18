@@ -1,0 +1,12 @@
+--- a/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.kt
++++ b/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.kt
+@@ -148,7 +148,8 @@
+             it.render(renderer, position = Variance.INVARIANT)
+         } ?: ""
+         val actualArgs = argNames.drop(if (extensionReceiverParameter != null) 1 else 0).dropLast(contextParameters.size)
+-        buildCall("$typesAsString(${actualArgs.joinToString()})")
++        val call = buildCall("$typesAsString(${actualArgs.joinToString()})")
++        if (effectiveReverseBridgeDeprecation() != null) "@kotlin.Suppress(\"DEPRECATION\") run { $call }" else call
+     }
+ 
+     override val bridges: List<SirBridge> by lazyWithSessions {

@@ -1,0 +1,42 @@
+{
+  "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "base_component_sha256": "4240be980f3a94bbb250bcf34d73a9b9585d73296edf09fe42bdf494377b0310",
+  "native_version": "2.4.21",
+  "native_compiler_sha256": "bad46f043b98d14c4150d654ea98996cabf71e7ad87ea3a57538956164443105",
+  "sources": [
+    {
+      "name": "SirFunctionFromKtSymbol.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.kt",
+      "sha256": "1b5e24dc1792b6b3e991c9fc3391f1f3f695fdb3acb631605a1543b8ae0ec05e"
+    },
+    {
+      "name": "TypeTranslationUtils.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/utils/TypeTranslationUtils.kt",
+      "sha256": "75a993c4b8e09ccf795c531cee5ff711b47e7241be03fe03dae9823e87617078"
+    },
+    {
+      "name": "AnnotationUtils.kt",
+      "url": "https://raw.githubusercontent.com/JetBrains/kotlin/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/utils/AnnotationUtils.kt",
+      "sha256": "d419ac6b4120c6b50e4e708af54b905d6291390e93ca922b2ef7a07012e4f367"
+    }
+  ],
+  "patch": "producer/native-forwarding/SirFunctionFromKtSymbol.kt.patch",
+  "patch_sha256": "2c766094913113a6b178c8457474ae4d16b33983365c8f0c83717a7aa3c2dd7a",
+  "candidate_upstream_syntax_sha256": "c3444dc8081f5fbae45b75f076bcc33a604bbd30e7ea4c024c53cfa21d7657f2",
+  "candidate_normalized_sha256": "6a4252a24f4f28d38de26700828cccc2c45a9279739df6a04efc0f0ed3fe3981",
+  "plugin_source": "producer/native-forwarding/NativeForwardingPlugin.kt",
+  "plugin_source_sha256": "19682ce0a05d9b959e6423bc428b4b13b3c2348d4881d99e34eebd58516501ac",
+  "changed_classes": [
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol$special$$inlined$lazyWithSessions$4.class",
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.class"
+  ],
+  "added_classes": [
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol$addNativeForwardBinding$1$typeParameters$2.class"
+  ],
+  "candidate_attributes": {
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol$special$$inlined$lazyWithSessions$4.class": "50177c7b1bf89d8056896595d712143f628174f615de0e977ed5d8d45b54a076",
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.class": "4e424cd0a7b4fc21dd9e000435c867f8de60e140a5aef01b4b26f70dd797ca69",
+    "org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol$addNativeForwardBinding$1$typeParameters$2.class": "0bb5d05bccbf0a42ce0aa1079df9100bde550d7057dc509aa79e3c64cd4c38d3"
+  },
+  "scope": "Top-level deprecated WARNING functions with no receiver/context/vararg/suspend/reified parameters; unsupported shapes retain their original bridge and diagnostics."
+}

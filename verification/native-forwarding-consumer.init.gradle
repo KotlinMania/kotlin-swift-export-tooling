@@ -1,0 +1,44 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+
+// Apply only to this invocation and the generated Native bridge compilation.
+def sourceScript = gradle.startParameter.initScripts.find { it.name == 'native-forwarding-consumer.init.gradle' }
+if (sourceScript == null) throw new GradleException('Cannot locate Native forwarding init script')
+def candidateRoot = new File(sourceScript.parentFile, '../build/native-forwarding-acceptance-01').canonicalFile
+def receiptFile = new File(candidateRoot, 'result.json')
+def receipt = new JsonSlurper().parse(receiptFile)
+def producer = new File(receipt.producer)
+def plugin = new File(receipt.plugin)
+def sha = { File file -> MessageDigest.getInstance('SHA-256').digest(file.bytes).encodeHex().toString() }
+def sourceLock = new JsonSlurper().parse(new File(sourceScript.parentFile, '../producer/native-forwarding/source-lock.json'))
+if (sha(producer) != receipt.producer_sha256 || sha(plugin) != receipt.plugin_sha256) throw new GradleException('Native forwarding candidate bytes changed')
+def consumer = gradle.startParameter.currentDir.canonicalFile
+
+gradle.projectsEvaluated {
+    allprojects { project ->
+        if (project.projectDir.canonicalFile == consumer) {
+            project.tasks.matching { it.name == 'macosArm64DebugSwiftExport' || it.name == 'macosArm64ReleaseSwiftExport' }.configureEach { task ->
+                def original = task.swiftExportClasspath.files.toList()
+                def selected = original.findAll { it.name == 'swift-export-embeddable-2.4.20-km.4.jar' }
+                if (selected.size() != 1 || sha(selected[0]) != sourceLock.base_component_sha256) throw new GradleException('Unexpected producer input')
+                def replacement = original.collect { it == selected[0] ? producer : it }
+                task.swiftExportClasspath.setFrom(replacement)
+                task.doFirst {
+                    if (sha(producer) != receipt.producer_sha256 || task.swiftExportClasspath.files.toList() != replacement) throw new GradleException('Producer candidate inputs changed')
+                    new File(candidateRoot, project.name + '-' + task.name + '-classpath.json').text = JsonOutput.prettyPrint(JsonOutput.toJson(replacement.collect { [path: it.absolutePath, sha256: sha(it)] })) + '\n'
+                }
+            }
+            project.tasks.matching { it.name.startsWith('compileSwiftExportMain') }.configureEach { task ->
+                task.inputs.file(plugin)
+                task.compilerOptions.freeCompilerArgs.add('-Xplugin=' + plugin.absolutePath)
+                task.doFirst {
+                    if (sha(plugin) != receipt.plugin_sha256) throw new GradleException('Native forwarding plugin changed')
+                    def arguments = task.compilerOptions.freeCompilerArgs.get()
+                    if (!task.compilerOptions.allWarningsAsErrors.get() || arguments.any { it.contains('DEPRECATION') }) throw new GradleException('Strict deprecation policy changed')
+                    new File(candidateRoot, project.name + '-' + task.name + '-policy.json').text = JsonOutput.prettyPrint(JsonOutput.toJson([warnings_as_errors: true, arguments: arguments])) + '\n'
+                }
+            }
+        }
+    }
+}

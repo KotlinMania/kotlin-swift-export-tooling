@@ -1,0 +1,74 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+
+// Apply only to this invocation and the consumer's Swift Export tasks, resolving the isolated local Maven candidate version without overwriting 2.4.20-km.4.
+def sourceScript = gradle.startParameter.initScripts.find { it.name == 'protocol-spi-defaults-consumer.init.gradle' }
+if (sourceScript == null) throw new GradleException('Cannot locate protocol-spi-defaults init script')
+def candidateRoot = new File(sourceScript.parentFile, '../build/protocol-spi-defaults-acceptance-01').canonicalFile
+def receiptFile = new File(candidateRoot, 'result.json')
+def receipt = new JsonSlurper().parse(receiptFile)
+def producer = new File(receipt.producer)
+def sha = { File file -> MessageDigest.getInstance('SHA-256').digest(file.bytes).encodeHex().toString() }
+def sourceLock = new JsonSlurper().parse(new File(sourceScript.parentFile, '../producer/protocol-spi-defaults/source-lock.json'))
+if (sha(producer) != receipt.producer_sha256) throw new GradleException('Protocol SPI defaults candidate bytes changed')
+def candidateVersion = '2.4.20-km.5-protocol-spi-defaults'
+def localM2Root = new File(System.getProperty('maven.repo.local', new File(System.getProperty('user.home'), '.m2/repository').absolutePath))
+def frozenJar = new File(localM2Root, 'io/github/kotlinmania/swift-export-embeddable/2.4.20-km.4/swift-export-embeddable-2.4.20-km.4.jar')
+if (frozenJar.isFile() && sha(frozenJar) != sourceLock.base_component_sha256) {
+    throw new GradleException('Frozen 2.4.20-km.4 artifact in Maven Local was modified')
+}
+def installedCandidateJar = new File(localM2Root, "io/github/kotlinmania/swift-export-embeddable/${candidateVersion}/swift-export-embeddable-${candidateVersion}.jar")
+if (!installedCandidateJar.isFile() || sha(installedCandidateJar) != receipt.producer_sha256) {
+    throw new GradleException("Expected installed Maven Local candidate at ${installedCandidateJar} matching ${receipt.producer_sha256}")
+}
+def consumer = gradle.startParameter.currentDir.canonicalFile
+
+gradle.beforeProject { project ->
+    if (project.projectDir.canonicalFile == consumer) {
+        project.configurations.configureEach { config ->
+            if (config.name == 'swiftExportClasspath') {
+                config.resolutionStrategy.eachDependency { details ->
+                    if (details.requested.group == 'io.github.kotlinmania' && details.requested.name == 'swift-export-embeddable') {
+                        details.useVersion(candidateVersion)
+                    }
+                }
+            }
+        }
+    }
+}
+
+gradle.projectsEvaluated {
+    allprojects { project ->
+        if (project.projectDir.canonicalFile == consumer) {
+            project.tasks.matching { it.name == 'macosArm64DebugSwiftExport' || it.name == 'macosArm64ReleaseSwiftExport' }.configureEach { task ->
+                def original = task.swiftExportClasspath.files.toList()
+                def alreadyCandidate = original.findAll { it.name == "swift-export-embeddable-${candidateVersion}.jar" }
+                def replacement
+                if (alreadyCandidate.size() == 1) {
+                    replacement = original
+                } else {
+                    def selected = original.findAll { it.name == 'swift-export-embeddable-2.4.20-km.4.jar' }
+                    if (selected.size() != 1 || sha(selected[0]) != sourceLock.base_component_sha256) {
+                        throw new GradleException("Unexpected producer input on ${task.path}: ${original}")
+                    }
+                    replacement = original.collect { it == selected[0] ? installedCandidateJar : it }
+                    task.swiftExportClasspath.setFrom(replacement)
+                }
+                task.inputs.file(installedCandidateJar).withPropertyName('protocolSpiDefaultsCandidateJar')
+                task.doFirst {
+                    def resolved = task.swiftExportClasspath.files.toList()
+                    def active = resolved.findAll { it.name == "swift-export-embeddable-${candidateVersion}.jar" }
+                    if (active.size() != 1 || sha(active[0]) != receipt.producer_sha256 || active[0].canonicalFile != installedCandidateJar.canonicalFile) {
+                        throw new GradleException("Unexpected resolved Swift Export producer on ${task.path}: ${active}")
+                    }
+                    if (frozenJar.isFile() && sha(frozenJar) != sourceLock.base_component_sha256) {
+                        throw new GradleException('Frozen 2.4.20-km.4 artifact in Maven Local was modified')
+                    }
+                    new File(candidateRoot, project.name + '-' + task.name + '-classpath.json').text =
+                        JsonOutput.prettyPrint(JsonOutput.toJson(resolved.collect { [path: it.absolutePath, sha256: sha(it)] })) + '\n'
+                }
+            }
+        }
+    }
+}

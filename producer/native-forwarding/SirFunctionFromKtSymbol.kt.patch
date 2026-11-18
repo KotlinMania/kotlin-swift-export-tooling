@@ -1,0 +1,103 @@
+--- a/SirFunctionFromKtSymbol.kt
++++ b/SirFunctionFromKtSymbol.kt
+@@ -23,6 +23,7 @@
+ import org.jetbrains.kotlin.sir.providers.source.kaSymbolOrNull
+ import org.jetbrains.kotlin.sir.providers.utils.allRequiredOptIns
+ import org.jetbrains.kotlin.sir.providers.utils.throwsAnnotation
++import org.jetbrains.kotlin.sir.providers.utils.deprecatedAnnotation
+ import org.jetbrains.kotlin.sir.util.isUnavailable
+ import org.jetbrains.kotlin.sir.util.replaceOrAddPropagatedUnavailability
+ import org.jetbrains.kotlin.sir.util.swiftFqName
+@@ -148,7 +149,9 @@
+             it.render(renderer, position = Variance.INVARIANT)
+         } ?: ""
+         val actualArgs = argNames.drop(if (extensionReceiverParameter != null) 1 else 0).dropLast(contextParameters.size)
+-        buildCall("$typesAsString(${actualArgs.joinToString()})")
++        nativeForwardBindingName()?.let { binding ->
++            "$binding$typesAsString(${actualArgs.joinToString()})"
++        } ?: buildCall("$typesAsString(${actualArgs.joinToString()})")
+     }
+ 
+     override val bridges: List<SirBridge> by lazyWithSessions {
+@@ -156,7 +159,7 @@
+ 
+         val forwardBridges = bridgeProxy?.let { proxy ->
+             buildList {
+-                addAll(proxy.createSirBridges(forwardKotlinCall))
++                addAll(addNativeForwardBinding(proxy.createSirBridges(forwardKotlinCall)))
+                 val ktSymbol = this@SirFunctionFromKtSymbol.ktSymbol
+                 if (needsNonVirtualForwardBridge() && !isAbstractKotlinMethod && ktSymbol is KaNamedSymbol) {
+                     add(proxy.createDirectDispatchForwardBridge(ktSymbol.name.asString(), forwardKotlinCall))
+@@ -204,6 +207,72 @@
+         forwardBridges + reverseBridges
+     }
+ 
++    // The Native compiler extension resolves this private binding to the original
++    // declaration before lowering. The public Kotlin declaration and Swift
++    // availability attributes are retained; no source diagnostic is filtered.
++    private fun nativeForwardBindingName(): String? = withSessions {
++        if (ktSymbol.deprecatedAnnotation?.level != DeprecationLevel.WARNING) return@withSessions null
++        if (!ktSymbol.isTopLevel || isAsync || extensionReceiverParameter != null || contextParameters != null) return@withSessions null
++        if (ktSymbol.typeParameters.any { it.isReified } || ktSymbol.valueParameters.any { it.isVararg }) return@withSessions null
++        bridgeFqName?.baseBridgeName?.let { "__KotlinSwiftExportCall_$it" }
++    }
++
++    private fun addNativeForwardBinding(bridges: List<SirBridge>): List<SirBridge> = withSessions {
++        val bindingName = nativeForwardBindingName() ?: return@withSessions bridges
++        val baseName = bridgeFqName?.baseBridgeName ?: error("Native forwarding requires a bridge name")
++        val callableId = (ktSymbol as? KaNamedFunctionSymbol)?.callableId ?: error("Native forwarding requires a named top-level function")
++        val markerName = "__KotlinSwiftExportTarget_$baseName"
++        val renderer = KaTypeRendererForSource.WITH_QUALIFIED_NAMES
++        val typeParameters = ktSymbol.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = "> ") {
++            "`${it.name.asString()}`"
++        }.orEmpty()
++        val valueParameters = ktSymbol.valueParameters.mapIndexed { index, parameter ->
++            "p$index: ${parameter.returnType.render(renderer, position = Variance.INVARIANT)}"
++        }.joinToString()
++        val result = ktSymbol.returnType.render(renderer, position = Variance.INVARIANT)
++        val bounds = ktSymbol.typeParameters.flatMap { parameter ->
++            parameter.upperBounds.map { bound ->
++                "`${parameter.name.asString()}`: ${bound.render(renderer, position = Variance.INVARIANT)}"
++            }
++        }.takeIf { it.isNotEmpty() }?.joinToString(prefix = " where ").orEmpty()
++        val declaration = listOf(
++            "@kotlin.annotation.Target(kotlin.annotation.AnnotationTarget.FUNCTION)",
++            "@kotlin.annotation.Retention(kotlin.annotation.AnnotationRetention.SOURCE)",
++            "private annotation class $markerName(val packageName: kotlin.String, val functionName: kotlin.String)",
++            "@$markerName(${kotlinString(callableId.packageName.asString())}, ${kotlinString(callableId.callableName.asString())})",
++            "private external fun $typeParameters$bindingName($valueParameters): $result$bounds",
++            "",
++        )
++        var installed = 0
++        val rewritten = bridges.map { bridge ->
++            if (bridge !is SirFunctionBridge || bridge.name != baseName) return@map bridge
++            installed += 1
++            SirFunctionBridge(
++                bridge.name,
++                KotlinFunctionBridge(declaration + bridge.kotlinFunctionBridge.lines, bridge.kotlinFunctionBridge.packageDependencies),
++                bridge.cDeclarationBridge,
++            )
++        }
++        check(installed == 1) { "Expected one callable-owned Native forward bridge for $baseName, found $installed" }
++        rewritten
++    }
++
++    private fun kotlinString(value: String): String = buildString {
++        append('"')
++        for (character in value) {
++            when (character) {
++                '\\' -> append("\\\\")
++                '"' -> append("\\\"")
++                '$' -> append("\\$")
++                '\n' -> append("\\n")
++                '\r' -> append("\\r")
++                '\t' -> append("\\t")
++                else -> append(character)
++            }
++        }
++        append('"')
++    }
++
+     private fun needsNonVirtualForwardBridge(): Boolean = withSessions {
+         needsReverseBridge() && parent is SirClass
+     }
