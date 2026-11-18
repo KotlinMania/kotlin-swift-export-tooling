@@ -40,10 +40,14 @@ public final class ProducerConsumers {
         "synchronousDictionaryCallbackKeepsTypedValues", "nullableDictionaryCallbackKeepsNilAndValuesDistinct", "invokesKotlinReturnedDictionaryClosure");
     static final List<String> REVERSE_TESTS = List.of("explicitExportNamesPreservePropertiesAndCanonicalMethods", "swiftProviderCallsThroughKotlinAndBackWithTypedIdentity", "swiftSuccessfulNullIsNotFailure",
         "independentSwiftFailureKeepsOriginalIdentity", "kotlinOwnerRetainsProviderBeyondSwiftLocalScope");
+    static final List<String> NULLABLE_UNSIGNED_TESTS = List.of("nullableUBytePreservesEveryBoundary", "nullableUShortPreservesEveryBoundary", "nullableUIntPreservesEveryBoundary", "nullableULongPreservesEveryBoundary", "mixedUnsignedWidthsRemainIndependent");
+    private static final String UNSIGNED_BASE_SHA = "d51da8510b78e94aa90b2def49ead640a39b386fb1c295821bc586b9b3e82f0b";
+    private static final String UNSIGNED_BRIDGE = "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSNumber";
     static final String ITERATOR_TEST = "iteratorRetainsArrayAndReleasesItsNativeAndObjCRoots";
     private record Profile(String command, String fixture, String module, String harness, String testModule, List<String> tests, Set<String> requiredModules) {}
     private static Profile profile(String command) {
         return switch (command) {
+            case "nullable-unsigned-consumer" -> new Profile(command, "nullable-unsigned-fixture", "NullableUnsignedProof", "NullableUnsigned", "NullableUnsignedTests", NULLABLE_UNSIGNED_TESTS, Set.of("NullableUnsignedTests", "NullableUnsignedProof", "KotlinRuntimeSupport", "ExportedKotlinPackages"));
             case "array-consumer" -> new Profile(command, "array-fixture", "ArrayIntegration", "AutomaticArray", "AutomaticArrayTests", List.of(), Set.of("AutomaticArrayTests", "ArrayIntegration", "KotlinRuntimeSupport", "KotlinCoroutineSupport"));
             case "bytearray-consumer" -> new Profile(command, "bytearray-fixture", "ByteArrayProof", "ByteArrayConstructor", "ByteArrayTests", BYTE_TESTS, Set.of("ByteArrayTests", "ByteArrayProof", "KotlinRuntimeSupport", "KotlinStdlib"));
             case "collection-consumer" -> new Profile(command, "collection-fixture", "FoundationCollectionProof", "FoundationCollectionConstructor", "FoundationCollectionTests", COLLECTION_TESTS, Set.of("FoundationCollectionTests", "FoundationCollectionProof", "KotlinRuntimeSupport", "ExportedKotlinPackages"));
@@ -56,7 +60,7 @@ public final class ProducerConsumers {
         return switch (command) {
             case "consumer" -> procMacro(options);
             case "iterator-consumer" -> iterator(options);
-            case "array-consumer", "bytearray-consumer", "collection-consumer", "reverse-import-consumer" -> fixture(profile(command), options);
+            case "array-consumer", "bytearray-consumer", "collection-consumer", "reverse-import-consumer", "nullable-unsigned-consumer" -> fixture(profile(command), options);
             default -> throw new IllegalArgumentException("Unknown consumer command: " + command);
         };
     }
@@ -65,7 +69,9 @@ public final class ProducerConsumers {
         Set<String> required = new LinkedHashSet<>(List.of("output", "sdk", "sdk-audit"));
         Set<String> allowed = new LinkedHashSet<>();
         if (command.equals("iterator-consumer")) required.addAll(List.of("package", "archive"));
-        else {
+        else if (command.equals("nullable-unsigned-consumer")) {
+            required.addAll(List.of("component", "candidate-audit", "cache", "gradle", "gradle-cache-seed", "konan-cache-seed", "configuration"));
+        } else {
             check(Set.of("consumer", "array-consumer", "bytearray-consumer", "collection-consumer", "reverse-import-consumer").contains(command), "Unknown consumer command: " + command);
             required.addAll(List.of("distribution", "cache"));
             if (command.equals("consumer") || command.equals("array-consumer")) {
@@ -81,6 +87,7 @@ public final class ProducerConsumers {
         allowed.addAll(required);
         check(allowed.containsAll(options.keySet()), "Unrecognized consumer options: " + difference(options.keySet(), allowed));
         required.forEach(name -> required(options, name));
+        if (command.equals("nullable-unsigned-consumer")) required.forEach(name -> check(!required(options, name).isBlank(), "--" + name + " must not be blank"));
         if (options.containsKey("configuration")) config(options, true);
         if (options.containsKey("host-tests")) check(Set.of("true", "false").contains(options.get("host-tests")), "host-tests must be true or false");
     }
@@ -264,25 +271,37 @@ public final class ProducerConsumers {
         }
         check(quote == 0, "Unterminated frontend command quote"); if (started || !word.isEmpty()) words.add(word.toString()); return words;
     }
-    private static String last(String regex, String text) { var matcher = Pattern.compile(regex).matcher(text); String result = null; while (matcher.find()) result = matcher.group(1); return result; }
+    private static String lastOption(List<String> arguments, String option) {
+        String result = null;
+        for (int i = 0; i < arguments.size(); i++) {
+            String argument = arguments.get(i);
+            if (argument.equals(option)) {
+                check(i + 1 < arguments.size() && !arguments.get(i + 1).startsWith("-"), "Missing frontend option value: " + option);
+                result = arguments.get(++i);
+            } else if (argument.startsWith(option + "=")) result = argument.substring(option.length() + 1);
+        }
+        return result;
+    }
     static Frontends frontends(String text, Set<String> authored, Set<String> required, boolean strictRunner, boolean proc) {
         List<Map<String, Object>> products = new ArrayList<>(); List<String> manifests = new ArrayList<>();
         for (String line : text.split("\\R")) {
-            if (!line.contains("swift-frontend") || !line.contains("-module-name ")) continue;
-            String module = last("-module-name\\s+(\\S+)", line); List<String> arguments = commandWords(line);
+            if (!line.contains("swift-frontend")) continue;
+            List<String> arguments = commandWords(line); String module = lastOption(arguments, "-module-name");
+            if (module == null) continue;
             boolean manifest = "main".equals(module) && arguments.stream().anyMatch(argument -> Path.of(argument).getFileName() != null && Path.of(argument).getFileName().toString().equals("Package.swift"));
             if (manifest) { manifests.add(line); continue; }
             check(!line.contains(" -package-description-version "), "Unexpected package manifest frontend");
-            String mode = last(proc ? "-swift-version\\s+(\\S+)" : "-swift-version\\s+(\\d+)", line);
-            boolean mac15 = proc ? Pattern.compile("-target\\s+arm64-apple-macos(?:x)?15\\.0(?:\\s|$)").matcher(line).find() : line.contains("-target arm64-apple-macosx15.0");
-            check(line.contains("-warnings-as-errors") && mac15, "Missing Werror/mac15 product frontend: " + module);
+            String mode = lastOption(arguments, "-swift-version");
+            String target = lastOption(arguments, "-target");
+            boolean mac15 = "arm64-apple-macosx15.0".equals(target) || proc && "arm64-apple-macos15.0".equals(target);
+            check(arguments.contains("-warnings-as-errors") && mac15, "Missing Werror/effective mac15 product frontend: " + module);
             if (module.endsWith("PackageTests")) {
                 if (strictRunner) check(mode == null || mode.equals("6") || proc && mode.equals("6.0"), "Unexpected generated runner mode: " + mode);
             } else {
                 String expected = authored.contains(module) ? "6" : "5";
                 check(expected.equals(mode) || proc && (expected + ".0").equals(mode), "Unexpected module language mode: " + module + ": " + mode);
             }
-            products.add(obj("module", module, "mode", mode, "swift_version", mode, "werror", true, "mac15", true, "target", true, "command", line));
+            products.add(obj("module", module, "mode", mode, "swift_version", mode, "werror", true, "mac15", true, "target", true, "effective_target", target, "command", line));
         }
         Set<String> modules = new LinkedHashSet<>(); for (Map<String, Object> row : products) modules.add(s(row.get("module")));
         check(!products.isEmpty() && modules.containsAll(required), "Missing actual dependency/test frontend proof: " + difference(required, modules));
@@ -352,6 +371,40 @@ public final class ProducerConsumers {
         }
         check(sha(component).equals(audit.get("sha256")), "Audited candidate component changed"); evidence.add(component); return new Selected(component, evidence);
     }
+    private Selected selectNullableUnsignedComponent(Map<String, String> options) throws IOException {
+        Path component = path(options, "component"); Path auditPath = path(options, "candidate-audit");
+        Path sourceLock = support.p("producer/nullable-unsigned/source-lock.json"); Map<String, Object> source = readObject(sourceLock);
+        Path parent = Path.of(s(source.get("baseProducer"))).toAbsolutePath().normalize();
+        Map<String, Object> audit = readObject(auditPath);
+        validateNullableUnsignedManifest(audit);
+        check(component.equals(Path.of(s(audit.get("component"))).toAbsolutePath().normalize()), "Nullable unsigned audit selected another component");
+        check(sha(component).equals(audit.get("sha256")), "Nullable unsigned component checksum mismatch");
+        check(sha(parent).equals(UNSIGNED_BASE_SHA) && UNSIGNED_BASE_SHA.equals(source.get("baseProducerSha256")), "Nullable unsigned parent checksum mismatch");
+        List<String> changed = List.of(UNSIGNED_BRIDGE + ".class"); List<String> added = List.of(UNSIGNED_BRIDGE + "$inKotlinSources$2.class");
+        Map<String, byte[]> original = entries(parent), candidate = entries(component);
+        check(difference(original.keySet(), candidate.keySet()).isEmpty() && difference(candidate.keySet(), original.keySet()).equals(Set.copyOf(added)), "Nullable unsigned candidate added or removed unexpected entries");
+        List<String> observed = original.keySet().stream().filter(name -> !java.util.Arrays.equals(original.get(name), candidate.get(name))).toList();
+        check(observed.equals(changed), "Nullable unsigned candidate changed unrelated parent bytes");
+        Map<String, String> pins = stringMap(audit.get("input_pins"));
+        verifyPins(pins, "Nullable unsigned host input changed");
+        Path patch = support.p("producer/nullable-unsigned/TypeBridging.kt.patch");
+        check(sha(patch).equals(source.get("patchSha256")), "Nullable unsigned source patch changed");
+        List<Path> evidence = new ArrayList<>(List.of(component, parent, auditPath, sourceLock, patch, support.p(SOURCE + "ProducerCli.java")));
+        for (String input : pins.keySet()) evidence.add(Path.of(input));
+        return new Selected(component, evidence);
+    }
+    static void validateNullableUnsignedManifest(Map<String, Object> audit) {
+        check(Path.of(s(audit.get("component"))).isAbsolute(), "Nullable unsigned component must be an absolute path");
+        check(s(audit.get("sha256")).matches("[0-9a-f]{64}"), "Malformed nullable unsigned component SHA-256");
+        check(UNSIGNED_BASE_SHA.equals(audit.get("base_component_sha256")), "Nullable unsigned parent checksum mismatch");
+        check(Boolean.TRUE.equals(audit.get("host_source_class_audit_passed")) && Boolean.TRUE.equals(audit.get("unselected_parent_bytes_identical")), "Nullable unsigned host source/class audit failed");
+        check(strings(audit.get("changed_classes")).equals(List.of(UNSIGNED_BRIDGE + ".class"))
+            && strings(audit.get("added_classes")).equals(List.of(UNSIGNED_BRIDGE + "$inKotlinSources$2.class"))
+            && l(audit.get("removed_classes")).isEmpty(), "Unexpected nullable unsigned class allowlist");
+        Map<String, Object> pins = m(audit.get("input_pins"));
+        check(!pins.isEmpty(), "Nullable unsigned host input pins must not be empty");
+        pins.forEach((input, hash) -> check(Path.of(input).isAbsolute() && s(hash).matches("[0-9a-f]{64}"), "Malformed nullable unsigned host input pin"));
+    }
     static void validateByteCandidate(Map<String, Object> audit) {
         check(Boolean.TRUE.equals(audit.get("accepted_for_isolated_fixture")) && Boolean.TRUE.equals(audit.get("all_unselected_parent_entries_byte_identical")), "ByteArray candidate was not accepted or changed unrelated parent entries");
         check(audit.get("baseline_classes_fullflags_instructions_attributes_equal") instanceof Number count && new BigDecimal(count.toString()).compareTo(BigDecimal.valueOf(8)) == 0, "ByteArray baseline class audit must cover exactly eight classes");
@@ -364,12 +417,33 @@ public final class ProducerConsumers {
         check(l(audit.get("added_or_removed_entries")).isEmpty(), "Collection candidate added or removed archive entries");
     }
 
+    static String nullableUnsignedManifestPolicy(Path root, String configuration, String javaExecutable, String classpath) {
+        check(Set.of("Debug", "Release").contains(configuration), "Unexpected nullable unsigned configuration");
+        List<String> command = List.of(javaExecutable, "-cp", classpath, SwiftManifestEnforcer.class.getName(),
+            root.resolve("build/SPMPackage/macosArm64/" + configuration + "/Package.swift").toString(),
+            "--receipt", root.resolve("manifest-policy.json").toString());
+        String arguments = command.stream().map(Json::stringify).collect(java.util.stream.Collectors.joining(", "));
+        return "\ngradle.projectsEvaluated {\n  gradle.rootProject.allprojects { p ->\n"
+            + "    p.tasks.matching { it.name == 'macosArm64" + configuration + "GenerateSPMPackage' }.configureEach { t ->\n"
+            + "      t.doLast {\n        def process = new ProcessBuilder([" + arguments + "]).redirectErrorStream(true).start()\n"
+            + "        def output = process.inputStream.getText('UTF-8')\n"
+            + "        new File(" + quote(root.resolve("logs/manifest-policy.log")) + ").text = output\n"
+            + "        if (process.waitFor() != 0) throw new GradleException('Nullable unsigned manifest policy failed: ' + output)\n"
+            + "      }\n    }\n  }\n}\n";
+    }
+
     private int fixture(Profile profile, Map<String, String> options) throws Exception {
         boolean array = profile.command().equals("array-consumer"); boolean collection = profile.command().equals("collection-consumer"); boolean reverse = profile.command().equals("reverse-import-consumer");
-        String configuration = config(options, !array); Path root = newOutput(options); Path distribution = path(options, "distribution"); Map<String, Object> lock = support.lock(); Map<String, Object> release = support.frozen();
+        boolean nullableUnsigned = profile.command().equals("nullable-unsigned-consumer");
+        String configuration = config(options, !array); Path root = newOutput(options); Map<String, Object> lock = support.lock(); Map<String, Object> release = support.frozen();
         if (array) { required(options, "sdk-download-audit"); required(options, "helper"); }
         if (options.containsKey("helper")) new ProducerDistribution(support).frozenHelper(lock, path(options, "helper"));
-        Path parent = distribution.resolve(s(lock.get("artifact")) + "-" + s(lock.get("version")) + ".jar"); Selected selected = selectComponent(profile, parent, distribution, options, release);
+        Selected selected;
+        if (nullableUnsigned) selected = selectNullableUnsignedComponent(options);
+        else {
+            Path distribution = path(options, "distribution"); Path parent = distribution.resolve(s(lock.get("artifact")) + "-" + s(lock.get("version")) + ".jar");
+            selected = selectComponent(profile, parent, distribution, options, release);
+        }
         List<Map<String, Object>> tools = workerTools(lock, selected.component(), path(options, "cache"), true); writeJson(root.resolve("compiler-classpath.json"), tools);
         Path fixture = support.p("verification/" + profile.fixture()); Map<String, String> fixturePins = pins(files(fixture));
         Path repairPath = null;
@@ -385,24 +459,40 @@ public final class ProducerConsumers {
         String init = Files.readString(initSource).replace("it.name == 'macosArm64DebugSwiftExport'", "it.name == 'macosArm64" + configuration + "SwiftExport'")
             .replace("it.name == 'macosArm64DebugGenerateSPMPackage'", "it.name == 'macosArm64" + configuration + "GenerateSPMPackage'")
             .replace("build/SPMPackage/macosArm64/Debug/Package.swift", "build/SPMPackage/macosArm64/" + configuration + "/Package.swift");
+        List<Path> manifestPolicyClasspath = nullableUnsigned ? java.util.Arrays.stream(System.getProperty("java.class.path").split(Pattern.quote(java.io.File.pathSeparator)))
+            .map(entry -> Path.of(entry).toAbsolutePath().normalize()).filter(Files::exists).toList() : List.of();
+        if (nullableUnsigned) {
+            check(!manifestPolicyClasspath.isEmpty(), "Missing producer manifest policy classpath");
+            String classpath = manifestPolicyClasspath.stream().map(Path::toString).collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator));
+            init += nullableUnsignedManifestPolicy(root, configuration, Path.of(System.getProperty("java.home"), "bin", "java").toString(), classpath);
+        }
         write(root.resolve("isolation.init.gradle"), init); write(root.resolve("strict.xcconfig"), STRICT);
         Path packageRoot = root.resolve("build/SPMPackage/macosArm64/" + configuration); write(harness.resolve("Package.swift"), manifest(profile, packageRoot, root.resolve("products")));
         Path sdk = path(options, "sdk");
-        if (collection) { Path supplied = sdk; sdk = root.resolve("native-sdk"); support.run(List.of("cp", "-cRL", supplied.toString(), sdk.toString()), root.resolve("logs/sdk-clone.log")); }
+        if (collection || nullableUnsigned) { Path supplied = sdk; sdk = root.resolve("native-sdk"); support.run(List.of("cp", "-cRL", supplied.toString(), sdk.toString()), root.resolve("logs/sdk-clone.log")); }
         Map<String, String> expectedSdk = expectedSdk(lock, readObject(path(options, "sdk-audit"))); checkSdk(sdk, expectedSdk, root);
         Session session = new Session(root, sdk, expectedSdk, tools, configuration, false); session.pins.putAll(fixturePins);
         List<Path> fixed = new ArrayList<>(implementationInputs()); fixed.addAll(selected.evidence()); fixed.addAll(List.of(support.p("inputs.lock.json"), support.p("verification/release-artifacts.json"), initSource,
             path(options, "sdk-audit"), root.resolve("compiler-classpath.json"), root.resolve("isolation.init.gradle"), root.resolve("strict.xcconfig")));
+        if (nullableUnsigned) {
+            fixed.add(support.p(SOURCE + "SwiftManifestEnforcer.java"));
+            fixed.add(support.p(SOURCE + "Json.java"));
+            for (Path path : manifestPolicyClasspath) {
+                if (Files.isDirectory(path)) fixed.addAll(files(path)); else fixed.add(path);
+            }
+        }
         if (repairPath != null) fixed.add(repairPath);
         if (array) fixed.addAll(List.of(support.p("verification/array-expected-tests.json"), support.p("verification/iterator-fixture/IteratorLifetimeTests.swift")));
         if (collection) fixed.addAll(List.of(support.p("producer/collections/source-lock.json"), support.p("producer/collections/TypeBridging.kt.patch"), support.p(SOURCE + "ProducerBuild.java"), support.p(SOURCE + "ProducerClosureAudit.java")));
         for (String name : List.of("sdk-download-audit", "helper")) if (options.containsKey(name)) fixed.add(path(options, name));
         fixed.addAll(files(root.resolve("fixture"))); fixed.addAll(files(harness));
         if (array) { fixed.addAll(files(root.resolve("gradle-home/caches/modules-2/files-2.1"))); fixed.addAll(files(root.resolve("konan-data")).stream().filter(p -> !p.getFileName().toString().endsWith(".lock")).toList()); }
-        session.pin(fixed); session.freeze(); session.verify(); String gradle = gradle(options, session); List<String> gradleArgs = gradleArgs(gradle, session, collection, false);
+        session.pin(fixed); session.freeze(); session.verify(); String gradle = gradle(options, session); List<String> gradleArgs = gradleArgs(gradle, session, collection || nullableUnsigned, false);
         session.run("embed", append(gradleArgs, "embedSwiftExportForXcode"), root.resolve("fixture")); Path archive = root.resolve("products/lib" + profile.module() + ".a"); check(Files.isRegularFile(archive), "Missing actual Native library archive: " + archive);
         Map<String, String> emitted = emitted(packageRoot, archive); writeJson(root.resolve("emitted-pins.json"), emitted);
-        String output = session.run("swift", swiftArgs(root, harness, array ? null : configuration, false), root);
+        List<String> swiftCommand = swiftArgs(root, harness, array ? null : configuration, false);
+        if (nullableUnsigned) swiftCommand.addAll(List.of("--build-system", "native", "-Xswiftc", "-v"));
+        String output = session.run("swift", swiftCommand, root);
         List<String> names = array ? strings(Json.read(support.p("verification/array-expected-tests.json"))) : profile.tests(); check(!array || names.size() == 27, "Expected twenty-seven Array behaviors");
         Map<String, Integer> counts = testCounts(output, names); Set<String> authored = reverse ? Set.of("ReverseImportTests", "SwiftProvider") : Set.of(profile.testModule());
         Frontends frontends = frontends(output, authored, profile.requiredModules(), array, false); unchangedEmitted(packageRoot, archive, emitted);

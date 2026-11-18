@@ -27,8 +27,14 @@ tasks.register("exportProducerClasspath") {
     }
 }
 
+val checkNullableUnsignedConsumer = tasks.register<JavaExec>("checkNullableUnsignedConsumer") {
+    dependsOn(tasks.testClasses)
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("io.github.kotlinmania.build.NullableUnsignedConsumerTests")
+}
+
 tasks.register("checkProducer") {
-    dependsOn(tasks.classes)
+    dependsOn(tasks.classes, checkNullableUnsignedConsumer)
     doLast {
         val repoRoot = projectDir.parentFile
         val lockFile = repoRoot.resolve("producer/protocol-spi-defaults/source-lock.json")

@@ -19,7 +19,7 @@ public final class ProducerCli {
         check(!args.isEmpty(), "Expected producer command; see tools/producer help");
         String command = args.removeFirst();
         if (command.equals("help") || command.equals("--help")) {
-            System.out.println("Commands: build, build-collection-candidate, build-native-forwarding-candidate, build-protocol-spi-defaults-candidate, build-native-writable-type-info-candidate, distribution, check-distribution, stage-resolution, download-native-sdk, prepare-native-sdk, audit-closure, consumer, array-consumer, bytearray-consumer, collection-consumer, iterator-consumer, reverse-import-consumer, verify-published, publish.\nUse the original named arguments with hyphenated command names; --helper is the immutable published helper ZIP. All generated paths belong under this repository's build/. tools/producer check runs the Java regression checks.");
+            System.out.println("Commands: build, build-collection-candidate, build-native-forwarding-candidate, build-protocol-spi-defaults-candidate, build-native-writable-type-info-candidate, distribution, check-distribution, stage-resolution, download-native-sdk, prepare-native-sdk, audit-closure, consumer, array-consumer, bytearray-consumer, collection-consumer, nullable-unsigned-consumer, iterator-consumer, reverse-import-consumer, verify-published, publish.\nUse the original named arguments with hyphenated command names; --helper is the immutable published helper ZIP. All generated paths belong under this repository's build/. tools/producer check runs the Java regression checks.");
             return 0;
         }
         int booleanFlag = args.indexOf("--host-tests");
@@ -38,6 +38,7 @@ public final class ProducerCli {
             case "prepare-native-sdk" -> Set.of("source", "destination", "receipt", "helper");
             case "audit-closure" -> Set.of("jar", "worker", "entries", "jdk", "output");
             case "publish" -> Set.of("distribution", "output", "pr-ci-run", "main-ci-run", "existing-secrets-dir");
+            case "nullable-unsigned-consumer" -> Set.of("output", "component", "candidate-audit", "cache", "sdk", "sdk-audit", "gradle", "gradle-cache-seed", "konan-cache-seed", "configuration");
             case "consumer", "array-consumer", "bytearray-consumer", "collection-consumer", "iterator-consumer", "reverse-import-consumer" -> Set.of("consumer", "output", "distribution", "cache", "sdk", "sdk-audit", "sdk-download-audit", "helper", "gradle", "gradle-cache-seed", "konan-cache-seed", "configuration", "candidate-audit", "host-tests", "package", "archive");
             default -> throw new IllegalArgumentException("Unknown producer command: " + command);
         };
@@ -57,7 +58,7 @@ public final class ProducerCli {
             case "download-native-sdk" -> distribution.downloadSdk(path(options, "output"));
             case "prepare-native-sdk" -> distribution.prepareSdk(path(options, "source"), path(options, "destination"), path(options, "receipt"), options.containsKey("helper") ? path(options, "helper") : null);
             case "audit-closure" -> ProducerClosureAudit.audit(context, path(options, "jar"), path(options, "worker"), path(options, "entries"), path(options, "jdk"), path(options, "output"));
-            case "consumer", "array-consumer", "bytearray-consumer", "collection-consumer", "iterator-consumer", "reverse-import-consumer" -> { return new ProducerConsumers(context).run(command, options); }
+            case "consumer", "array-consumer", "bytearray-consumer", "collection-consumer", "iterator-consumer", "reverse-import-consumer", "nullable-unsigned-consumer" -> { return new ProducerConsumers(context).run(command, options); }
             case "verify-published" -> distribution.verifyPublished(path(options, "output"));
             case "publish" -> distribution.publish(options);
             default -> throw new IllegalArgumentException("Unknown producer command: " + command);

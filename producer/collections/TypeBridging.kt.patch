@@ -28,6 +28,14 @@
          override val requiresNativeCarrier: Boolean get() = elementBridge.hasNativeCarrier()
          override val objcFoundationClass: String get() = "NSArray"
          override fun nativeValueType(typeNamer: SirTypeNamer): String = "kotlin.collections.List<${elementBridge.collectionValueType(typeNamer)}>"
+@@ -745,6 +753,6 @@
+                 }
+                 val elementConversion = elementBridge.inSwiftSources.kotlinToSwift(typeNamer, "__element as! Swift.Int")
+-                return "($valueExpression as! [Any]).map { __element in $elementConversion }"
++                return "$valueExpression.map { __element in $elementConversion }"
+             }
+         }
+ 
 @@ -834,6 +842,9 @@
  
      class AsNSDictionary(swiftType: SirNominalType, private val keyBridge: BidirectionalBridge, private val valueBridge: BidirectionalBridge) :

@@ -1,0 +1,15 @@
+{
+  "baseProducer": "/Volumes/stuff/Projects/kotlinmania/kotlin-swift-export-tooling/build/validation/km5-combined-tooling/build/inputs/km5.jar",
+  "baseProducerSha256": "d51da8510b78e94aa90b2def49ead640a39b386fb1c295821bc586b9b3e82f0b",
+  "sourceRecipe": "/Volumes/stuff/Projects/kotlinmania/kotlin-swift-export-tooling/build/validation/km5-combined-tooling/build/java-reproduction-final/km6-callback-cast-candidate-verified2/baseline/rebuilt/invocation.json",
+  "sourceProvenance": "/Volumes/stuff/Projects/kotlinmania/kotlin-swift-export-tooling/build/validation/km5-combined-tooling/build/java-reproduction-final/km6-callback-cast-candidate-verified2/verified-host-result.json",
+  "baselineSourceSha256": "444786a0f719fb9a5309cc04ef1848fec421be33e62f483ca21103ec1f0a02e4",
+  "candidateSourceSha256": "410c854f96a5306fdbf5670493c6fc5a22170b9e12a5f2097746b96dbdb57504",
+  "patchSha256": "309a819c19198f6e2ef60b487c53eb981d5b87a180f60e4c54e21ad40b7dd246",
+  "scope": "New unsigned AsNSNumber inbound conversion only. Existing Char conversion, outbound conversion, consumer APIs, null wrapper, published artifact and all pins remain unchanged.",
+  "runtimeSources": [
+    "https://github.com/JetBrains/kotlin/blob/890ac1d94fdb80eb85f0eeb5be5e4352df987b2f/kotlin-native/runtime/src/objc/cpp/ObjCExportClasses.mm",
+    "https://github.com/JetBrains/kotlin/blob/v2.4.21/kotlin-native/runtime/src/objc/cpp/ObjCExportClasses.mm"
+  ],
+  "strictNativeCorrection": "Same-type unsigned branches return boxedNumber directly; no redundant conversion or warning suppression."
+}

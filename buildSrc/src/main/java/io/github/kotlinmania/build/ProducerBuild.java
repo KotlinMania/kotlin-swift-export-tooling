@@ -131,6 +131,11 @@ final class ProducerBuild {
         }
         patch(root.resolve("candidate/sources/TypeBridging.kt"), patch, root.resolve("patch.log"));
         check(sha(root.resolve("candidate/sources/TypeBridging.kt")).equals(repair.get("candidate_source_sha256")), "Candidate source differs");
+        String callbackArrayBridge = Files.readString(root.resolve("candidate/sources/TypeBridging.kt"));
+        check(callbackArrayBridge.contains("val elementConversion = elementBridge.inSwiftSources.kotlinToSwift(typeNamer, \"__element as! Swift.Int\")")
+                        && callbackArrayBridge.contains("return \"$valueExpression.map { __element in $elementConversion }\"")
+                        && !callbackArrayBridge.contains("return \"($valueExpression as! [Any]).map { __element in $elementConversion }\""),
+                "Callback NSArray bridge must preserve per-element pointer conversion without recasting imported [Any]");
         Map<String, List<Path>> inputs = new LinkedHashMap<>();
         for (String variant : List.of("baseline", "candidate")) {
             Path directory = root.resolve(variant + "/inputs"); Files.createDirectory(directory);
@@ -161,7 +166,7 @@ final class ProducerBuild {
         for (String variant : List.of("baseline", "candidate")) for (String module : modules.keySet()) directories.put(variant + "-" + module, root.resolve(variant + "/" + module + "/classes"));
         for (Map.Entry<String, Path> directory : directories.entrySet()) canonical(auditCp, directory.getValue(), root.resolve(directory.getKey() + "-canonical"), entries, root.resolve(directory.getKey() + "-attributes.log"));
         List<String> expected = List.of("org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsContravariantBlock$inSwiftSources$1.class",
-                "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray.class", "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection$InSwiftSources.class",
+                "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray$inSwiftSources$1.class", "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSArray.class", "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection$InSwiftSources.class",
                 "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSCollection.class", "org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/Bridge$AsNSDictionary.class");
         check(m(repair.get("class_modules")).keySet().stream().sorted().toList().equals(expected), "Reviewed class selection changed");
         for (String module : modules.keySet()) check(differences(entries, root.resolve("baseline-" + module + "-canonical"), root.resolve("candidate-" + module + "-canonical")).equals(expected), "Unexpected non-debug class delta");
